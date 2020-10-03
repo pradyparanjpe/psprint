@@ -46,9 +46,9 @@ class InfoPrint():
             [0, 1, ""],
             [2, 1, 'inform'],
             [3, 1, 'action'],
+            [4, 1, 'list'],
             [5, 1, 'warning'],
             [1, 1, 'error'],
-            [4, 1, 'list'],
             [6, 1, 'debug']
         ]
         self.max_info_size = 7
