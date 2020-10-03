@@ -28,5 +28,5 @@ from . import psprint as print
 if __name__ in ("__main__", "psprint.__main__"):
     print("Use me as an imported module", 1)
     print("from psprint import psprint as print", 2)
-    print("Tell-tales may be edited by importing a info_print class", 3)
+    print("Tell-tales may be edited by importing info_print class", 3)
     print("Bye", 4)

@@ -49,5 +49,5 @@ setup(
     author_email="pradyparanjpe@rediffmail.com",
     url="https://github.com/pradyparanjpe/",
     install_requires=["colorama"],
-    scripts=["bin/psprint"],
+    scripts=[],
 )
