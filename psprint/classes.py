@@ -81,9 +81,9 @@ class InfoPrint():
         '''
         prepend spaces and [ ] to make it pretty
         '''
-        return "[" + " " * (self.max_info_size - len(info)) \
-            + " " \
-            + info.upper() + " ] "
+        return " " * (self.max_info_size - len(info)) \
+            + "[" \
+            + info.upper() + "] "
 
     def psprint(self, value, i_t=0, **kwargs) -> None:
         '''
