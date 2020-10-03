@@ -42,7 +42,7 @@ setup(
     name="psprint",
     version="0.0.0.0dev0",
     description="""
-    print class with additional information
+    psprint - Prompt String Print
     """,
     license="GPLv3",
     author="Pradyumna Paranjape",

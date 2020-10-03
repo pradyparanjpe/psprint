@@ -18,10 +18,11 @@
 # along with psprint.  If not, see <https://www.gnu.org/licenses/>.
 #
 '''
-Initialized banner for psprint
+Classes
 '''
 
 
+from typing import Any
 from colorama import Fore, Style
 
 
@@ -57,7 +58,7 @@ class InfoPrint():
 
     def __str__(self) -> str:
         '''
-        print formatted self.info_style
+        formatted InfoPrint().info_style
         '''
         outstr = 'info_style_index: color, style, info_type\n'
         for idx, info in enumerate(self.info_list):
@@ -85,45 +86,59 @@ class InfoPrint():
             + "[" \
             + info.upper() + "] "
 
-    def psprint(self, value, i_t=0, **kwargs) -> None:
+    def psprint(self, value: Any, i_t: Any = 0, **kwargs) -> None:
         '''
-        value: Printed with an prefix of info_type
-        t: interpreted type to prefix out_msg
+        value: prefixed with i_t and printed
+        i_t: int: pre-declared info_type
+        i_t: str: on-the-fly info_type (WHITE, NORMAL)
+
         everyting else is passed to print_function
         '''
+        if isinstance(i_t, str):
+            print(self._pad(i_t) + str(value), **kwargs)
+            return
         if not 0 <= i_t < len(self.info_style):
             i_t = 0
         print(self.info_style[i_t] + str(value), **kwargs)
+        return
 
     def add_style(self, info_type: str, color: int = 7, style: int = 1,
                   info_style_index: int = None) -> str:
         '''
         info_type: string prefixed to the line in the form [ INFO_TYPE ] STRING
         color: terminal color indices [0 - 15]
-        style: 0: RESET_ALL, 1: NORMAL, 2: DIM, 3: BRIGHT
+        style: Bright/Dim
         info_style_index: Index passed to psprint function as info_type
+
+        Orders:
+        colors: 0:BLACK\t1:RED\t2:GREEN\t3:YELLOW
+                4:BLUE\t5:MAGENTA\t6:CYAN\t7:WHITE
+                    and their Dim/Bright versions
+        styles: 0:RESET_ALL\t1:NORMAL\t2:DIM\t3:BRIGHT
+
+        returns the new (updated) info_style
         '''
-        if color > 15:
+        if not 0 <= color <= 15:
             raise ValueError("0 <= color <= 15")
-        if style > 3:
+        if 0 <= style <= 3:
             raise ValueError("0 <= style <= 3")
-        if len(info_type) > 10:
+        if 0 <= len(info_type) <= 10:
             raise ValueError("Too long info type")
         if info_style_index is None or\
            info_style_index >= len(self.info_list):
             self.info_list.append([color, style, info_type])
         else:
             self.info_list.insert([color, style, info_type], info_style_index)
-        print("New Info Styles:")
-        print(self)
         self._update_info_styles()
+        return str(self)
 
-    def remove_style(self, info_style_index) -> None:
+    def remove_style(self, info_style_index) -> str:
         '''
-        info_style_index is popped from the list
+        info_style_index: is popped from the list
+
+        returns the new (updated) info_style
         '''
         if info_style_index < len(self.info_list):
             self.info_list.pop(info_style_index)
-        print("New Info Styles:")
-        print(self)
         self._update_info_styles()
+        return str(self)

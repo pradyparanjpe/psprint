@@ -18,17 +18,17 @@
 # along with psprint.  If not, see <https://www.gnu.org/licenses/>.
 #
 '''
-module init
+Prompt String-like Print
 '''
 
 
 from .classes import InfoPrint
 
 
-INFO_PRINT = InfoPrint()
-psprint = INFO_PRINT.psprint
+DEFAULT_PRINT = InfoPrint()
+psprint = DEFAULT_PRINT.psprint
 __all__ = [
     'InfoPrint',
-    'INFO_PRINT',
+    'DEFAULT_PRINT',
     'psprint'
 ]
