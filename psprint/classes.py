@@ -93,7 +93,7 @@ class InfoPrint():
         '''
         if not 0 <= i_t < len(self.info_style):
             i_t = 0
-        print(self.info_style[i_t], str(value), **kwargs)
+        print(self.info_style[i_t] + str(value), **kwargs)
 
     def add_style(self, info_type: str, color: int = 7, style: int = 1,
                   info_style_index: int = None) -> str:
