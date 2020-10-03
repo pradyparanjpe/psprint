@@ -51,8 +51,4 @@ setup(
     packages=['psprint'],
     install_requires=["colorama"],
     scripts=[],
-    cmdclass={
-        'develop': PostDevelop,
-        'install': PostInstall
-    }
 )
