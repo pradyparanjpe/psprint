@@ -48,6 +48,11 @@ setup(
     author="Pradyumna Paranjape",
     author_email="pradyparanjpe@rediffmail.com",
     url="https://github.com/pradyparanjpe/",
+    packages=['psprint'],
     install_requires=["colorama"],
     scripts=[],
+    cmdclass={
+        'develop': PostDevelop,
+        'install': PostInstall
+    }
 )
