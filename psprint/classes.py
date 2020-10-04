@@ -65,41 +65,59 @@ class InfoPrint():
             outstr += f'{idx}: {info[0]}, {info[1]}, {info[2]}\n'
         return outstr
 
+    def _std_prefix_str(self, info, color: int = 7, face: int = 1) -> str:
+        '''
+        standard prefixed string
+        '''
+        return self.avail_colors[color] \
+                + self.avail_styles[face] \
+                + self._pad(info) \
+                + self.avail_styles[0]
+
     def _update_info_styles(self) -> None:
         '''
         update info styles based on available info lists
         '''
         for info_type in list(zip(*self.info_list))[-1]:
             self.max_info_size = max(self.max_info_size, len(info_type))
-        for color, style, info in self.info_list:
-            self.info_style.append(
-                self.avail_colors[color] + self.avail_styles[style]
-                + self._pad(info)
-                + self.avail_styles[0]
-            )
+        for color, face, info in self.info_list:
+            self.info_style.append(self._std_prefix_str(info, color, face))
 
     def _pad(self, info) -> str:
         '''
         prepend spaces and [ ] to make it pretty
         '''
-        return " " * (self.max_info_size - len(info)) \
-            + "[" \
-            + info.upper() + "] "
+        pad_len = (self.max_info_size - len(info))
+        outstr = " " + " " * pad_len if pad_len >=0 else " "
+        return f"[{info.upper()}]" + outstr
 
-    def psprint(self, value: Any, i_t: Any = 0, **kwargs) -> None:
+    def psprint(self, value: Any, i_t: Any = 0, color: int = 7,
+                face: int = 1, **kwargs) -> None:
         '''
         value: prefixed with i_t and printed
         i_t: int: pre-declared info_type
-        i_t: str: on-the-fly info_type (WHITE, NORMAL)
+
+        else:
+        i_t: str: on-the-fly info_type
+        color: int: Terminal color index {0..15}
+        face: int: 1:\tNormal\t2:Dim\t3:Bright
 
         everyting else is passed to print_function
         '''
         if isinstance(i_t, str):
-            print(self._pad(i_t) + str(value), **kwargs)
+            color = int(color) if 0 <= color <= len(self.avail_colors) else 7
+            face = int(face) if 0 <= face <= len(self.avail_styles) else 1
+            print(
+                self._std_prefix_str(i_t, color, face) +
+                str(value),
+                **kwargs
+            )
             return
-        if not 0 <= i_t < len(self.info_style):
-            i_t = 0
-        print(self.info_style[i_t] + str(value), **kwargs)
+        if isinstance(i_t, (int, float)):
+            i_t = int(i_t) if 0 <= i_t < len(self.info_style) else 0
+            print(self.info_style[i_t] + str(value), **kwargs)
+        else:
+            raise TypeError(f"Bad type of i_t '{i_t}' should be int/str")
         return
 
     def add_style(self, info_type: str, color: int = 7, style: int = 1,
