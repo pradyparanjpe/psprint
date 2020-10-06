@@ -61,6 +61,7 @@ class InfoMark():
         # Standards check
         if not 0 <= len(pref_long_str) <= 10:
             raise ValueError("Too long (>10) prefix string")
+
         if not 0 <= len(self.pref_short_str) <= 1:
             raise ValueError("Short-prefix must be 1 character-long")
         if 'text_color' in kwargs:
@@ -111,14 +112,19 @@ class InfoPrint():
         # Standard info styles
         self.info_style = {
             'cont': InfoMark(pref_long_str="", pref_short_str=''),
-            'info': InfoMark(pref_long_str="inform", pref_short_str='i', pref_color=2),
-            'act': InfoMark(pref_long_str="action", pref_short_str='@', pref_color=3),
-            'list': InfoMark(pref_long_str="list", pref_short_str='·', pref_color=4),
-            'warn': InfoMark(pref_long_str="warning", pref_short_str='?', pref_color=5),
-            'err': InfoMark(pref_long_str="error", pref_short_str='!', pref_color=1,
-                            pref_gloss=1, text_color=1, text_gloss=2),
-            'bug': InfoMark(pref_long_str="debug", pref_short_str='#', pref_color=6,
-                            text_color=6, text_gloss=2),
+            'info': InfoMark(pref_long_str="inform",
+                             pref_short_str='i', pref_color=2),
+            'act': InfoMark(pref_long_str="action",
+                            pref_short_str='@', pref_color=3),
+            'list': InfoMark(pref_long_str="list",
+                             pref_short_str='·', pref_color=4),
+            'warn': InfoMark(pref_long_str="warning",
+                             pref_short_str='?', pref_color=5),
+            'err': InfoMark(pref_long_str="error", pref_short_str='!',
+                            pref_color=1, pref_gloss=1, text_color=1,
+                            text_gloss=2),
+            'bug': InfoMark(pref_long_str="debug", pref_short_str='#',
+                            pref_color=6, text_color=6, text_gloss=2),
         }
         self.max_info_size = 7
         self.info_index = ['cont', 'info', 'act', 'list', 'warn', 'err', 'bug']
@@ -129,14 +135,14 @@ class InfoPrint():
         '''
         return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
 
-    def _prefix_mark(self, mark: InfoMark = None,
-                     index_str: I_H = 0, short=False) -> str:
+    def _prefix_mark(self, mark: InfoMark = None, index_str: I_H = 0,
+                     short: bool = False, pad: bool = False) -> str:
         '''
         standard prefixed string
         '''
         if mark is None:
             if isinstance(index_str, int):
-                if not 0 <= index_str < len(self.info_index):
+                if not (0 <= index_str < len(self.info_index)):
                     index_str = 0
                 mark = self.info_style[self.info_index[index_str]]
             else:
@@ -144,33 +150,35 @@ class InfoPrint():
         info = mark.pref_short_str if short else mark.pref_long_str
         return mark.pref_color + \
             mark.pref_gloss + \
-            self._pad(info, short=short) + \
+            self._pad(info, short=short, pad=pad) + \
             mark.text_color +\
             mark.text_gloss
 
-    def _pad(self, info, short=False) -> str:
+    def _pad(self, info, short=False, pad: bool = False) -> str:
         '''
         prepend spaces and [ ] to make it pretty
         '''
-        pad_len = 3 - len(info) if short else self.max_info_size - len(info)
+        infolen = len(info)
+        if not info:
+            infolen = - 2
+        pad_len = 1 - infolen if short else self.max_info_size - infolen
         if pad_len < 0:
             pad_len = 0
+        prefix = f"[{info}]" if info else ""
         padstr = " " + " " * pad_len
-        prefix = f"[{info}]" if info else "  "
-        return prefix + padstr
+        return prefix + padstr * pad
 
-    def psprint(self, value: Any = '', pref: I_H = None, short=False, **kwargs) -> None:
+    def psprint(self, value: Any = '', pref: I_H = None,
+                short=False, pad=False, **kwargs) -> None:
         '''
         value: prefixed with i_t and printed
-        pref: str/int: pre-declared InfoMark
-
-
-        else:
+        pref: str/int: pre-declared InfoMark OR {
         pref_color: int (7)
         pref_gloss: int (1)
         text_color: int (7)
         text_gloss: int (1)
-        pref_text: ">"
+        pref_text: ">" }
+        pad: if true, print with padding after pref
 
         everyting else is passed to print_function
         '''
@@ -189,20 +197,13 @@ class InfoPrint():
             on_the_fly = InfoMark(**mark_kwargs)
         else:
             on_the_fly = None
-        print(
-            self._prefix_mark(
-                mark=on_the_fly,
-                index_str=pref,
-                short=short
-            ) +
-            str(value) +
-            AVAIL_GLOSS[0],
-            **kwargs
-        )
+        print(self._prefix_mark(mark=on_the_fly, index_str=pref,
+                                short=short, pad=pad) +
+              str(value) + AVAIL_GLOSS[0], **kwargs)
         return
 
     def edit_style(self, pref_long_str, index_handle: int = None,
-                  index_str: str = None, **kwargs) -> str:
+                   index_str: str = None, **kwargs) -> str:
         '''
         index: Index handle that will call this InfoMark
         index_str: Index string handle that will call this InfoMark
@@ -223,7 +224,8 @@ class InfoPrint():
             self.info_index.append(index_str)
         else:
             self.info_index.insert(index_handle, index_str)
-        self.info_style[index_str] = InfoMark(pref_long_str=pref_long_str, **kwargs)
+        self.info_style[index_str] = InfoMark(pref_long_str=pref_long_str,
+                                              **kwargs)
         return str(self)
 
     def remove_style(self, index_str: str = None,
