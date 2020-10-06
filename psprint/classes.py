@@ -22,8 +22,82 @@ Classes
 '''
 
 
-from typing import Any
+from typing import Any, TypeVar
 from colorama import Fore, Style
+
+
+I_H = TypeVar("I_H", str, int)
+
+
+AVAIL_GLOSS = [Style.RESET_ALL, Style.NORMAL, Style.DIM, Style.BRIGHT]
+AVAIL_COLORS = [Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW,
+                Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE,
+                Fore.LIGHTBLACK_EX, Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX,
+                Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX,
+                Fore.LIGHTCYAN_EX, Fore.LIGHTWHITE_EX]
+
+
+class InfoMark():
+    '''
+    Information object
+    '''
+    def __init__(self, pref_long_str: str = '',
+                 pref_short_str: str = '>', **kwargs) -> None:
+        '''
+        pref_long_str: Message-description prefix
+        pref_short_str: Short-description (1 character-long)
+        pref_color: prefix color (the 16 standard terminal colors)
+        pref_gloss: prefix gloss (dim/bright)
+        text_color: Out-Text color
+        text_gloss: Out-Text gloss
+
+        Initiate object
+        '''
+        self.pref_long_str: str = pref_long_str.upper()
+        self.pref_short_str: str = pref_short_str
+        if 'pref_short_str' in kwargs:
+            self.pref_short_str = kwargs['pref_short_str']
+
+        # Standards check
+        if not 0 <= len(pref_long_str) <= 10:
+            raise ValueError("Too long (>10) prefix string")
+        if not 0 <= len(self.pref_short_str) <= 1:
+            raise ValueError("Short-prefix must be 1 character-long")
+        if 'text_color' in kwargs:
+            if not 0 <= kwargs['text_color'] <= 15:
+                print("[WARN] 0 <= color <= 15, using 7")
+                kwargs['text_color'] = 7
+        if 'pref_color' in kwargs:
+            if not 0 <= kwargs['pref_color'] <= 15:
+                print("[WARN] 0 <= color <= 15, using 7")
+                kwargs['pref_color'] = 7
+        if 'text_gloss' in kwargs:
+            if not 0 <= kwargs['text_gloss'] <= 3:
+                print("[WARN] 0 <= gloss <= 3, using 1")
+                kwargs['text_gloss'] = 1
+        if 'pref_gloss' in kwargs:
+            if not 0 <= kwargs['pref_gloss'] <= 3:
+                print("[WARN] 0 <= gloss <= 3, using 1")
+                kwargs['pref_gloss'] = 1
+
+        # Styles
+        self.pref_color: int = AVAIL_COLORS[int(kwargs.get('pref_color', 7))]
+        self.text_color: int = AVAIL_COLORS[int(kwargs.get('text_color', 7))]
+        self.pref_gloss: int = AVAIL_GLOSS[int(kwargs.get('pref_gloss', 1))]
+        self.text_gloss: int = AVAIL_GLOSS[int(kwargs.get('text_gloss', 1))]
+
+    def __str__(self) -> str:
+        '''
+        string format of available information
+        '''
+        outstr = AVAIL_GLOSS[0] + '\tshort\tlong\ttext\n'
+        outstr += AVAIL_GLOSS[0] + 'prefix:\t{}{}{}\t{}\t{}{}{}\n'.format(
+            str(self.pref_color), str(self.pref_gloss),
+            self.pref_short_str, self.pref_long_str,
+            str(self.text_color), str(self.text_gloss),
+            "<CUSTOM>" + AVAIL_GLOSS[0]
+        )
+        return outstr
 
 
 class InfoPrint():
@@ -34,99 +108,105 @@ class InfoPrint():
         '''
         initialize print styles
         '''
-        self.avail_colors = [
-            Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW,
-            Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE,
-            Fore.LIGHTBLACK_EX, Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX,
-            Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX,
-            Fore.LIGHTCYAN_EX, Fore.LIGHTWHITE_EX
-        ]
-        self.avail_styles = [Style.RESET_ALL, Style.NORMAL,
-                             Style.DIM, Style.BRIGHT]
-        self.info_list = [
-            [0, 1, ""],
-            [2, 1, 'inform'],
-            [3, 1, 'action'],
-            [4, 1, 'list'],
-            [5, 1, 'warning'],
-            [1, 1, 'error'],
-            [6, 1, 'debug']
-        ]
+        # Standard info styles
+        self.info_style = {
+            'cont': InfoMark(pref_long_str="", pref_short_str=' '),
+            'info': InfoMark(pref_long_str="inform", pref_short_str='i', pref_color=2),
+            'act': InfoMark(pref_long_str="action", pref_short_str='@', pref_color=3),
+            'list': InfoMark(pref_long_str="list", pref_short_str='·', pref_color=4),
+            'warn': InfoMark(pref_long_str="warning", pref_short_str='?', pref_color=5),
+            'err': InfoMark(pref_long_str="error", pref_short_str='!', pref_color=1,
+                            pref_gloss=1, text_color=1, text_gloss=2),
+            'bug': InfoMark(pref_long_str="debug", pref_short_str='#', pref_color=6,
+                            text_color=6, text_gloss=2),
+        }
         self.max_info_size = 7
-        self.info_style = []
-        self._update_info_styles()
+        self.info_index = ['cont', 'info', 'act', 'list', 'warn', 'err', 'bug']
 
     def __str__(self) -> str:
         '''
         formatted InfoPrint().info_style
         '''
-        outstr = 'info_style_index: color, style, info_type\n'
-        for idx, info in enumerate(self.info_list):
-            outstr += f'{idx}: {info[0]}, {info[1]}, {info[2]}\n'
-        return outstr
+        return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
 
-    def _std_prefix_str(self, info, color: int = 7, face: int = 1) -> str:
+    def _prefix_mark(self, mark: InfoMark = None,
+                     index_str: I_H = 0, short=False) -> str:
         '''
         standard prefixed string
         '''
-        return self.avail_colors[color] \
-                + self.avail_styles[face] \
-                + self._pad(info) \
-                + self.avail_styles[0]
+        if mark is None:
+            if isinstance(index_str, int):
+                if not 0 <= index_str <= len(self.info_index):
+                    index_str = 0
+                mark = self.info_style[self.info_index[index_str]]
+            else:
+                mark = self.info_style[index_str]
+        info = mark.pref_short_str if short else mark.pref_long_str
+        return mark.pref_color + \
+            mark.pref_gloss + \
+            self._pad(info, short=short) + \
+            mark.text_color +\
+            mark.text_gloss
 
-    def _update_info_styles(self) -> None:
-        '''
-        update info styles based on available info lists
-        '''
-        for info_type in list(zip(*self.info_list))[-1]:
-            self.max_info_size = max(self.max_info_size, len(info_type))
-        for color, face, info in self.info_list:
-            self.info_style.append(self._std_prefix_str(info, color, face))
-
-    def _pad(self, info) -> str:
+    def _pad(self, info, short=False) -> str:
         '''
         prepend spaces and [ ] to make it pretty
         '''
-        pad_len = (self.max_info_size - len(info))
+        pad_len = 1 if short else (self.max_info_size - len(info))
         outstr = " " + " " * pad_len if pad_len >=0 else " "
-        return f"[{info.upper()}]" + outstr
+        prefix = f"[{info}]" if info else "  "
+        return prefix + outstr
 
-    def psprint(self, value: Any, i_t: Any = 0, color: int = 7,
-                face: int = 1, **kwargs) -> None:
+    def psprint(self, value: Any, pref: I_H = None, short=False, **kwargs) -> None:
         '''
         value: prefixed with i_t and printed
-        i_t: int: pre-declared info_type
+        pref: str/int: pre-declared InfoMark
+
 
         else:
-        i_t: str: on-the-fly info_type
-        color: int: Terminal color index {0..15}
-        face: int: 1:\tNormal\t2:Dim\t3:Bright
+        pref_color: int (7)
+        pref_gloss: int (1)
+        text_color: int (7)
+        text_gloss: int (1)
+        pref_text: ">"
 
         everyting else is passed to print_function
         '''
-        if isinstance(i_t, str):
-            color = int(color) if 0 <= color <= len(self.avail_colors) else 7
-            face = int(face) if 0 <= face <= len(self.avail_styles) else 1
-            print(
-                self._std_prefix_str(i_t, color, face) +
-                str(value),
-                **kwargs
-            )
-            return
-        if isinstance(i_t, (int, float)):
-            i_t = int(i_t) if 0 <= i_t < len(self.info_style) else 0
-            print(self.info_style[i_t] + str(value), **kwargs)
+        mark_kw = ['pref_long_str',
+                   'pref_short_str',
+                   'pref_color',
+                   'text_color',
+                   'pref_gloss',
+                   'text_gloss']
+        mark_kwargs = {}
+        for k in mark_kw:
+            if k in kwargs:
+                mark_kwargs[k] = kwargs[k]
+                del kwargs[k]
+        if pref is None:
+            on_the_fly = InfoMark(**mark_kwargs)
         else:
-            raise TypeError(f"Bad type of i_t '{i_t}' should be int/str")
+            on_the_fly = None
+        print(
+            self._prefix_mark(
+                mark=on_the_fly,
+                index_str=pref,
+                short=short
+            ) +
+            str(value) +
+            AVAIL_GLOSS[0],
+            **kwargs
+        )
         return
 
-    def add_style(self, info_type: str, color: int = 7, style: int = 1,
-                  info_style_index: int = None) -> str:
+    def edit_style(self, pref_long_str, index_handle: int = None,
+                  index_str: str = None, **kwargs) -> str:
         '''
-        info_type: string prefixed to the line in the form [ INFO_TYPE ] STRING
+        index: Index handle that will call this InfoMark
+        index_str: Index string handle that will call this InfoMark
         color: terminal color indices [0 - 15]
-        style: Bright/Dim
-        info_style_index: Index passed to psprint function as info_type
+        gloss: Bright/Dim
+        **kwargs: passed to InfoMark for initialization
 
         Orders:
         colors: 0:BLACK\t1:RED\t2:GREEN\t3:YELLOW
@@ -136,27 +216,24 @@ class InfoPrint():
 
         returns the new (updated) info_style
         '''
-        if not 0 <= color <= 15:
-            raise ValueError("0 <= color <= 15")
-        if 0 <= style <= 3:
-            raise ValueError("0 <= style <= 3")
-        if 0 <= len(info_type) <= 10:
-            raise ValueError("Too long info type")
-        if info_style_index is None or\
-           info_style_index >= len(self.info_list):
-            self.info_list.append([color, style, info_type])
+        if index_handle is None or \
+           not 0 <= index_handle <= len(self.info_index):
+            self.info_index.append(index_str)
         else:
-            self.info_list.insert([color, style, info_type], info_style_index)
-        self._update_info_styles()
+            self.info_index.insert(index_handle, index_str)
+        self.info_style[index_str] = InfoMark(pref_long_str=pref_long_str, **kwargs)
         return str(self)
 
-    def remove_style(self, info_style_index) -> str:
+    def remove_style(self, index_str: str = None,
+                     index_handle: int = None) -> str:
         '''
-        info_style_index: is popped from the list
+        index_str: is popped out of defined styles
+        index_handle: is used to locate index_str if it is not provided
 
         returns the new (updated) info_style
         '''
-        if info_style_index < len(self.info_list):
-            self.info_list.pop(info_style_index)
-        self._update_info_styles()
+        if index_str is None:
+            if index_handle < len(self.info_style):
+                index_str = self.info_index.pop(index_handle)
+        del self.info_style[index_str]
         return str(self)
