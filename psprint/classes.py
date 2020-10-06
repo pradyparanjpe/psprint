@@ -152,10 +152,10 @@ class InfoPrint():
         '''
         prepend spaces and [ ] to make it pretty
         '''
-        pad_len = 1 if short else (self.max_info_size - len(info))
-        outstr = " " + " " * pad_len if pad_len >=0 else " "
-        prefix = f"[{info}]" if info else "   "
-        return prefix + outstr
+        pad_len = 0 if short else (self.max_info_size - len(info))
+        padstr = " " + " " * pad_len if pad_len >=0 else " "
+        prefix = f"[{info}]" if info else " "
+        return prefix + padstr
 
     def psprint(self, value: Any = '', pref: I_H = None, short=False, **kwargs) -> None:
         '''
