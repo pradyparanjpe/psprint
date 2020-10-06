@@ -157,7 +157,7 @@ class InfoPrint():
         prefix = f"[{info}]" if info else "  "
         return prefix + outstr
 
-    def psprint(self, value: Any, pref: I_H = None, short=False, **kwargs) -> None:
+    def psprint(self, value: Any = '', pref: I_H = None, short=False, **kwargs) -> None:
         '''
         value: prefixed with i_t and printed
         pref: str/int: pre-declared InfoMark
