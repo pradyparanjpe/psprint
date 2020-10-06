@@ -110,7 +110,7 @@ class InfoPrint():
         '''
         # Standard info styles
         self.info_style = {
-            'cont': InfoMark(pref_long_str="", pref_short_str=''),
+            'cont': InfoMark(pref_long_str="", pref_short_str=' '),
             'info': InfoMark(pref_long_str="inform", pref_short_str='i', pref_color=2),
             'act': InfoMark(pref_long_str="action", pref_short_str='@', pref_color=3),
             'list': InfoMark(pref_long_str="list", pref_short_str='·', pref_color=4),
@@ -153,8 +153,10 @@ class InfoPrint():
         prepend spaces and [ ] to make it pretty
         '''
         pad_len = 0 if short else (self.max_info_size - len(info))
-        padstr = " " + " " * pad_len if pad_len >=0 else " "
-        prefix = f"[{info}]" if info else " "
+        if pad_len < 0:
+            pad_len = 0
+        padstr = " " + " " * pad_len
+        prefix = f"[{info}]" if info else "  "
         return prefix + padstr
 
     def psprint(self, value: Any = '', pref: I_H = None, short=False, **kwargs) -> None:
