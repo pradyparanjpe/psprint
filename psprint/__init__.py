@@ -26,9 +26,9 @@ from .classes import InfoPrint
 
 
 DEFAULT_PRINT = InfoPrint()
-psprint = DEFAULT_PRINT.psprint
+PRINT = DEFAULT_PRINT.psprint
 __all__ = [
     'InfoPrint',
     'DEFAULT_PRINT',
-    'psprint'
+    'PRINT'
 ]

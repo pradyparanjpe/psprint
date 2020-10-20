@@ -22,14 +22,14 @@ module init
 '''
 
 
-from . import psprint as print
+from . import PRINT as print
 
 
 if __name__ in ("__main__", "psprint.__main__"):
     print()
     print("usage:", pref='err', pad=True)
     print("Use me as an imported module", pref='info', pad=True)
-    print("from psprint import psprint as print", pref='act', pad=True)
+    print("from psprint import PRINT as print", pref='act', pad=True)
     print("Tell-tales may be edited by importing info_print class", pref='list',
           pad=True)
     print("Bye", pref='bug', pad=True)
