@@ -156,7 +156,7 @@ class InfoPrint():
                     index_str = 0
                 mark = self.info_style[self.info_index[index_str]]
             else:
-                mark = self.info_style[index_str]
+                mark = self.info_style.get(index_str, self.info_style['cont'])
         info = mark.pref_short_str if short else mark.pref_long_str
         return mark.pref_color + \
             mark.pref_gloss + \
@@ -181,22 +181,22 @@ class InfoPrint():
     def psprint(self, value: Any = '', pref: InfoHandle = None,
                 short=False, pad=False, **kwargs) -> None:
         '''
-        value: prefixed with i_t and printed
+        value: prefixed with {pref_long_str} and printed
+        short: if true, use {pref_short_str} instead
         pad: if true, print with padding after pref
-        short: if true, pref_text is pref_short_str
         pref: str/int: pre-declared InfoMark defaults: {
-        cont: 0
-        info: 1
-        act: 2
-        list: 3
-        warn: 4
-        error: 5
-        bug: 6} OR in **kwargs {
+        cont: or 0 or anything else
+        info: or 1
+        act:  or 2
+        list: or 3
+        warn: or 4
+        error:or 5
+        bug:  or 6 } OR in **kwargs {
         pref_color: int (7)
         pref_gloss: int (1)
         text_color: int (7)
         text_gloss: int (1)
-        pref_text: ">" }
+        pref_text:  ">" }
 
         everyting else is passed to print_function
         '''
