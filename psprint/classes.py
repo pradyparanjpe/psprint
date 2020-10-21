@@ -26,7 +26,7 @@ from typing import Any, TypeVar
 from colorama import Fore, Style
 
 
-I_H = TypeVar("I_H", str, int)
+InfoHandle = TypeVar("InfoHandle", str, int)
 
 
 AVAIL_GLOSS = [Style.RESET_ALL, Style.NORMAL, Style.DIM, Style.BRIGHT]
@@ -100,6 +100,16 @@ class InfoMark():
         )
         return outstr
 
+    def get_info(self) -> str:
+        '''
+        This is defined only because flake8 complains that the object has
+        only 1 public method
+
+        print information
+        '''
+        print(str(self))
+        return str(self)
+
 
 class InfoPrint():
     '''
@@ -135,14 +145,14 @@ class InfoPrint():
         '''
         return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
 
-    def _prefix_mark(self, mark: InfoMark = None, index_str: I_H = 0,
+    def _prefix_mark(self, mark: InfoMark = None, index_str: InfoHandle = 0,
                      short: bool = False, pad: bool = False) -> str:
         '''
         standard prefixed string
         '''
         if mark is None:
             if isinstance(index_str, int):
-                if not (0 <= index_str < len(self.info_index)):
+                if not 0 <= index_str < len(self.info_index):
                     index_str = 0
                 mark = self.info_style[self.info_index[index_str]]
             else:
@@ -168,17 +178,25 @@ class InfoPrint():
         padstr = " " + " " * pad_len
         return prefix + padstr * pad
 
-    def psprint(self, value: Any = '', pref: I_H = None,
+    def psprint(self, value: Any = '', pref: InfoHandle = None,
                 short=False, pad=False, **kwargs) -> None:
         '''
         value: prefixed with i_t and printed
-        pref: str/int: pre-declared InfoMark OR {
+        pad: if true, print with padding after pref
+        short: if true, pref_text is pref_short_str
+        pref: str/int: pre-declared InfoMark defaults: {
+        cont: 0
+        info: 1
+        act: 2
+        list: 3
+        warn: 4
+        error: 5
+        bug: 6} OR in **kwargs {
         pref_color: int (7)
         pref_gloss: int (1)
         text_color: int (7)
         text_gloss: int (1)
         pref_text: ">" }
-        pad: if true, print with padding after pref
 
         everyting else is passed to print_function
         '''
@@ -200,7 +218,6 @@ class InfoPrint():
         print(self._prefix_mark(mark=on_the_fly, index_str=pref,
                                 short=short, pad=pad) +
               str(value) + AVAIL_GLOSS[0], **kwargs)
-        return
 
     def edit_style(self, pref_long_str, index_handle: int = None,
                    index_str: str = None, **kwargs) -> str:
