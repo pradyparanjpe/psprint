@@ -47,7 +47,7 @@ setup(
     license="LGPLv3",
     author="Pradyumna Paranjape",
     author_email="pradyparanjpe@rediffmail.com",
-    url="https://github.com/pradyparanjpe/",
+    url="https://github.com/pradyparanjpe/psprint",
     packages=['psprint'],
     install_requires=["colorama"],
     scripts=[],

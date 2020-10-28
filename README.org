@@ -81,11 +81,11 @@
 
 * Uninstallation
 ** pip
-   =pip remove -y psprint=
+   =pip uninstall -y psprint=
 
 ** pspman
    Remove installation
-   =pip remove -y psprint=
+   =pip uninstall -y psprint=
 
    Remove repository clone
    =pspman -s -d psprint=
