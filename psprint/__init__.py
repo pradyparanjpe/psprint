@@ -50,7 +50,17 @@ def _set_opts(rcfile) -> None:
                 conf[mark].get("flush", False) else\
                 False
         else:
-            DEFAULT_PRINT.edit_style(**conf[mark])
+            kwargs = {
+                'pref_long_str': None,
+                'pref_short_str': None,
+                'index_str': mark
+            }
+            for key, val in conf[mark].items():
+                if key in ("index", "pref_color", "pref_gloss",
+                           "text_color", "text_gloss"):
+                    val = int(val)
+                kwargs[key] = val
+            DEFAULT_PRINT.edit_style(**kwargs)
 
 
 RC_LOCATIONS = {
