@@ -40,11 +40,11 @@ class PostInstall(install):
 
 setup(
     name="psprint",
-    version="0.0.0.0dev0",
+    version="0.0.0.1",
     description="""
     psprint - Prompt String Print
     """,
-    license="GPLv3",
+    license="LGPLv3",
     author="Pradyumna Paranjape",
     author_email="pradyparanjpe@rediffmail.com",
     url="https://github.com/pradyparanjpe/",
