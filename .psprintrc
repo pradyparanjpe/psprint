@@ -1,16 +1,9 @@
-#-*-mode:conf; coding:utf-8; -*-
-# In-line comments are unacceptible
-[FORM]
+[DEFAULT]
 short = False
-pad = true
-flush = yes
+pad = True
+flush = True
 sep =
 end =
-# short, pad and flush are boolean, rest are strings
-# Although [file = path string] may be provided here, it is discouraged
-# if file is provided, all standard output gets *appended* to that file
-# This may be risky as the file is opened out of context,
-# and remains "unhandled"
 
 [help]
 pref_long_str = HELP
@@ -19,6 +12,3 @@ pref_color = 3
 pref_style = 1
 text_color = 7
 text_style = 1
-# *_color=[0, 15] and *_style=[0, 3] are integers
-# pref_short_str should be 1 character long
-# section-head is used as prefix index while calling print function

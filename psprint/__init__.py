@@ -39,8 +39,6 @@ def _set_opts(rcfile) -> None:
     conf.read(rcfile)
     for mark in conf:
         if mark == "DEFAULT":
-            continue
-        if mark == "FORM":
             DEFAULT_PRINT.short =\
                 conf[mark].getboolean("short", fallback=False)
             DEFAULT_PRINT.pad =\
@@ -76,13 +74,13 @@ def _set_opts(rcfile) -> None:
 
 
 RC_LOCATIONS = {
+    'root': Path("/etc/psprint/style.conf"),
     'user': Path(os.environ["HOME"]).joinpath("." + "psprintrc"),
-    'local': Path(os.getcwd()).joinpath("." + "psprintrc"),
     'config': Path(os.environ["HOME"]).joinpath(
         ".config", "psprint", "style.conf"
     ),
     'xdg_config': Path().joinpath("psprintrc"),  # juvenile user|fails
-    'root': Path("/etc/psprint/style.conf"),
+    'local': Path(os.getcwd()).joinpath("." + "psprintrc"),
 }
 
 try:

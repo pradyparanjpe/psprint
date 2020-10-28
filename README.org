@@ -1,0 +1,155 @@
+#-*- coding:utf-8; mode:org -*-
+#+TITLE: psprint
+#+AUTHOR: Pradyumna Paranjape
+#+EMAIL: pradyparanjpe@rediffmail.com
+#+LANGUAGE: en
+#+OPTIONS: toc: t mathjax:t TeX:t num:t ::t :todo:nil tags:nil *:t skip:t
+#+STARTUP: overview
+#+PROPERTY: header-args :tangle t
+
+* Table of Contents :toc:
+- [[#usage][Usage]]
+  - [[#substitute-pythons-print][Substitute python's print]]
+  - [[#what-does-it-do][What does it do]]
+    - [[#without-psprint][Without psprint]]
+    - [[#with-psprint][With psprint]]
+- [[#installation][Installation]]
+  - [[#pip][pip]]
+  - [[#pspman][pspman]]
+- [[#uninstallation][Uninstallation]]
+  - [[#pip-1][pip]]
+  - [[#pspman-1][pspman]]
+- [[#configuration][Configuration]]
+  - [[#location-of-configuration-files][Location of configuration files]]
+    - [[#root-linux-only][Root (LINUX ONLY):]]
+    - [[#user-home][User (HOME):]]
+    - [[#user-xdg_config_home][User (XDG_CONFIG_HOME):]]
+    - [[#local][Local:]]
+  - [[#configuration-format][Configuration format]]
+    - [[#comments][Comments]]
+    - [[#sections][Sections]]
+      - [[#default][DEFAULT]]
+      - [[#custom][<custom>]]
+
+* Usage
+** Substitute python's print
+   Import in your script
+   - Recommended: =from psprint import PRINT=
+   - Careless: =from psprint import PRINT as print=
+
+** What does it do
+*** Without psprint
+    The following plain print statements:
+    #+begin_src python :tangle no
+      print("An output statement which informs the user")
+      print("This statement requests the user to act")
+      print("A debugging output useless to the user")
+    #+end_src
+    #+BEGIN_EXAMPLE
+      An output statement which informs the user
+      This statement requests the user to act
+      A debugging output useless to the user
+    #+END_EXAMPLE
+    Are difficult to differentiate
+
+*** With psprint
+    #+begin_src python :tangle usage.py
+      from psprint import PRINT
+      PRINT("An output statement which informs the user", 1)
+      PRINT("This statement requests the user to act", 2)
+      PRINT("A debugging output useless to the user", 6)
+    #+end_src
+    #+BEGIN_EXAMPLE
+      [INFORM]  An output statement which informs the user
+      [ACTION]  This statement requests the user to act
+      [DEBUG]   A debugging output useless to the user
+    #+END_EXAMPLE
+    ...and with colors
+
+* Installation
+** pip
+   Prefered method
+   =pip install psprint=
+
+** pspman
+   For automated management: updates, etc
+   =pspman -s -i https://github.com/pradyparanjpe/psprint.git=
+
+* Uninstallation
+** pip
+   =pip remove -y psprint=
+
+** pspman
+   Remove installation
+   =pip remove -y psprint=
+
+   Remove repository clone
+   =pspman -s -d psprint=
+
+* Configuration
+** Location of configuration files
+   Configuration may be specified in any of the following locations:
+*** Root (LINUX ONLY):
+    This is inhereted by all users of the system
+
+    =/etc/psprint/style.conf=
+
+*** User (HOME):
+    *This is discouraged.* Maintaining configuration files in =$HOME= is a bad practice. Such configuration should be in =$XDG_CONFIG_HOME=.
+
+    `$HOME/.psprintrc`
+
+*** User (XDG_CONFIG_HOME):
+    This variable is generally set to =$HOME/.config= on unix-like systems
+    Even if unset, we will still try the =$HOME/.config= directory.
+
+    =$XFG_CONFIG_HOME/psprint/style.conf=
+
+*** Local:
+    In the current working directory
+
+    =.psprintrc=
+
+** Configuration format
+*** Comments
+    In-line comments are unacceptible
+*** Sections
+**** DEFAULT
+     Following variables may be set as boolean value forms (yes, true, 1, false, no, 0).
+     - short: Information prefix is short (1 character).
+     - pad: Information prefix is fixed length, padded with <space> wherever necessary.
+     - flush: This is passed to python's print function.
+
+     Following variables may be set to string values
+     - sep: This is passed to python's print function. This is currently useless, since only 1 =value= is allowed.
+     - end: This is passed to python's print function.
+     - file: /Discouraged/ STDOUT gets *appended* to =file=. This may be risky as the file is _opened out of context_
+     #+BEGIN_SRC conf :tangle .psprintrc
+       [DEFAULT]
+       short = False
+       pad = True
+       flush = True
+       sep =
+       end =
+     #+END_SRC
+
+**** <custom>
+     The <custom> string is used as prefix index while calling print function
+     Following variables may be set as integers
+     - pref_color: color of information prefix in range [0, 15]
+     - pref_style: style of information prefix in range [0, 3]
+     - text_color: color of text value in range [0, 15]
+     - text_style: color of text value in range [0, 3]
+
+     Following variables may be set as integers
+     - pref_long_string: <10 character long information prefix string (long form)
+     - pref_short_str: 1 character information prefix (short form)
+     #+BEGIN_SRC conf :tangle .psprintrc
+       [help]
+       pref_long_str = HELP
+       pref_short_str = ?
+       pref_color = 3
+       pref_style = 1
+       text_color = 7
+       text_style = 1
+     #+END_SRC
