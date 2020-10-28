@@ -38,10 +38,17 @@ def _set_opts(rcfile) -> None:
     conf = ConfigParser()
     conf.read(rcfile)
     for mark in conf:
-        if mark == "FORM":
-            DEFAULT_PRINT.short = conf[mark].get("short", False)
-            DEFAULT_PRINT.pad = conf[mark].get("pad", False)
-            DEFAULT_PRINT.flush = conf[mark].get("flush", False)
+        print(mark)
+        if mark in ("FORM", "DEFAULT"):
+            DEFAULT_PRINT.short = True if\
+                conf[mark].get("short", False) else\
+                False
+            DEFAULT_PRINT.pad = True if\
+                conf[mark].get("pad", False) else\
+                False
+            DEFAULT_PRINT.flush = True if\
+                conf[mark].get("flush", False) else\
+                False
         else:
             DEFAULT_PRINT.edit_style(**conf[mark])
 
@@ -50,16 +57,16 @@ RC_LOCATIONS = {
     'user': Path(os.environ["HOME"]).joinpath("." + "psprintrc"),
     'local': Path(os.getcwd()).joinpath("." + "psprintrc"),
     'config': Path(os.environ["HOME"]).joinpath(
-        ".config", "psprintrc", "style.conf"
+        ".config", "psprint", "style.conf"
     ),
     'xdg_config': Path().joinpath("psprintrc"),  # juvenile user|fails
-    'root': Path("/etc/psprint/psprintrc/style.conf"),
+    'root': Path("/etc/psprint/style.conf"),
 }
 
 try:
     RC_LOCATIONS['xdg_config'] = Path(
         os.environ["XDG_CONFOG_HOME"]
-    ).joinpath("psprintrc", "style.conf")
+    ).joinpath("psprint", "style.conf")
 except KeyError:
     pass
 
