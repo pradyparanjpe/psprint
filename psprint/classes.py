@@ -138,6 +138,9 @@ class InfoPrint():
         }
         self.max_info_size = 7
         self.info_index = ['cont', 'info', 'act', 'list', 'warn', 'err', 'bug']
+        self.short = False
+        self.pad = False
+        self.flush = False
 
     def __str__(self) -> str:
         '''
@@ -146,10 +149,14 @@ class InfoPrint():
         return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
 
     def _prefix_mark(self, mark: InfoMark = None, index_str: InfoHandle = 0,
-                     short: bool = False, pad: bool = False) -> str:
+                     short: bool = None, pad: bool = None) -> str:
         '''
         standard prefixed string
         '''
+        if short is None:
+            short = self.short
+        if pad is None:
+            pad = self.pad
         if mark is None:
             if isinstance(index_str, int):
                 if not 0 <= index_str < len(self.info_index):
@@ -164,10 +171,14 @@ class InfoPrint():
             mark.text_color +\
             mark.text_gloss
 
-    def _pad(self, info, short=False, pad: bool = False) -> str:
+    def _pad(self, info, short: bool = None, pad: bool = None) -> str:
         '''
         prepend spaces and [ ] to make it pretty
         '''
+        if short is None:
+            short = self.short
+        if pad is None:
+            pad = self.pad
         infolen = len(info)
         if not info:
             infolen = - 2
@@ -179,7 +190,7 @@ class InfoPrint():
         return prefix + padstr * pad
 
     def psprint(self, value: Any = '', pref: InfoHandle = None,
-                short=False, pad=False, **kwargs) -> None:
+                short=None, pad=None, **kwargs) -> None:
         '''
         value: prefixed with {pref_long_str} and printed
         short: if true, use {pref_short_str} instead
@@ -215,9 +226,14 @@ class InfoPrint():
             on_the_fly = InfoMark(**mark_kwargs)
         else:
             on_the_fly = None
-        print(self._prefix_mark(mark=on_the_fly, index_str=pref,
-                                short=short, pad=pad) +
-              str(value) + AVAIL_GLOSS[0], **kwargs)
+        if 'flush' in kwargs:
+            flush = kwargs['flush']
+            del kwargs['flush']
+        else:
+            flush = self.flush
+        print(self._prefix_mark(
+            mark=on_the_fly, index_str=pref, short=short, pad=pad
+        ) + str(value) + AVAIL_GLOSS[0], flush=flush, **kwargs)
 
     def edit_style(self, pref_long_str, index_handle: int = None,
                    index_str: str = None, **kwargs) -> str:
