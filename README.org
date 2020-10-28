@@ -57,9 +57,9 @@
 *** With psprint
     #+begin_src python :tangle usage.py
       from psprint import PRINT
-      PRINT("An output statement which informs the user", 1)
-      PRINT("This statement requests the user to act", 2)
-      PRINT("A debugging output useless to the user", 6)
+      PRINT("An output statement which informs the user", pref=1)
+      PRINT("This statement requests the user to act", pref=2)
+      PRINT("A debugging output useless to the user", pref='bug')
     #+end_src
 
     Result:
@@ -125,7 +125,7 @@
      - flush: This is passed to python's print function.
 
      Following variables may be set to string values
-     - sep: This is passed to python's print function. This is currently useless, since only 1 =value= is allowed.
+     - sep: This is passed to python's print function.
      - end: This is passed to python's print function.
      - file: /Discouraged/ STDOUT gets *appended* to =file=. This may be risky as the file is _opened out of context_
      #+BEGIN_SRC conf :tangle .psprintrc

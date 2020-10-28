@@ -197,10 +197,9 @@ class InfoPrint():
         padstr = " " + " " * pad_len
         return prefix + padstr * pad
 
-    def psprint(self, value: Any = '', pref: InfoHandle = None,
+    def psprint(self, *args, pref: InfoHandle = None,
                 short=None, pad=None, **kwargs) -> None:
         '''
-        value: prefixed with {pref_long_str} and printed
         short: if true, use {pref_short_str} instead
         pad: if true, print with padding after pref
         pref: str/int: pre-declared InfoMark defaults: {
@@ -216,6 +215,7 @@ class InfoPrint():
         text_color: int (7)
         text_gloss: int (1)
         pref_text:  ">" }
+        *args: passed on to print_function for printing
 
         everyting else is passed to print_function
         '''
@@ -239,7 +239,8 @@ class InfoPrint():
                 kwargs[key] = default
         print(self._prefix_mark(
             mark=on_the_fly, index_str=pref, short=short, pad=pad
-        ) + str(value) + AVAIL_GLOSS[0], **kwargs)
+        ) + kwargs['sep'].join((str(a) for a in args)) + AVAIL_GLOSS[0],
+              **kwargs)
 
     def edit_style(self, pref_long_str, index_handle: int = None,
                    index_str: str = None, **kwargs) -> str:
