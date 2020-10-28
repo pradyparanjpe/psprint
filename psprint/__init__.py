@@ -35,20 +35,25 @@ def _set_opts(rcfile) -> None:
     '''
     infile: rc file to read
     '''
-    conf = ConfigParser()
+    conf = ConfigParser(allow_no_value=True)
     conf.read(rcfile)
     for mark in conf:
-        print(mark)
-        if mark in ("FORM", "DEFAULT"):
-            DEFAULT_PRINT.short = True if\
-                conf[mark].get("short", False) else\
-                False
-            DEFAULT_PRINT.pad = True if\
-                conf[mark].get("pad", False) else\
-                False
-            DEFAULT_PRINT.flush = True if\
-                conf[mark].get("flush", False) else\
-                False
+        if mark == "DEFAULT":
+            continue
+        if mark == "FORM":
+            DEFAULT_PRINT.short =\
+                conf[mark].getboolean("short", fallback=False)
+            DEFAULT_PRINT.pad =\
+                conf[mark].getboolean("pad", fallback=False)
+            DEFAULT_PRINT.print_kwargs['sep'] =\
+                conf[mark].get("sep", fallback="\t") or "\t"
+            DEFAULT_PRINT.print_kwargs['end'] =\
+                conf[mark].get("end", fallback="\n") or "\n"
+            DEFAULT_PRINT.print_kwargs['flush'] =\
+                conf[mark].getboolean("flush", fallback=False)
+            fname = conf[mark].get("file", fallback=None)  # I discourage this
+            if fname is not None:
+                DEFAULT_PRINT.print_kwargs['file'] = open(fname, "a")
         else:
             kwargs = {
                 'pref_long_str': None,
@@ -60,7 +65,14 @@ def _set_opts(rcfile) -> None:
                            "text_color", "text_gloss"):
                     val = int(val)
                 kwargs[key] = val
-            DEFAULT_PRINT.edit_style(**kwargs)
+            try:
+                DEFAULT_PRINT.edit_style(**kwargs)
+            except ValueError as err:
+                print()
+                print(f"'{mark}' from {rcfile}")
+                print("couldn't be parsed due to following error:")
+                print(f"'{err}'")
+                print()
 
 
 RC_LOCATIONS = {

@@ -22,6 +22,7 @@ Classes
 '''
 
 
+from sys import stdout
 from typing import Any, TypeVar
 from colorama import Fore, Style
 
@@ -55,15 +56,17 @@ class InfoMark():
         '''
         self.pref_long_str: str = pref_long_str.upper()
         self.pref_short_str: str = pref_short_str
-        if 'pref_short_str' in kwargs:
-            self.pref_short_str = kwargs['pref_short_str']
 
         # Standards check
         if not 0 <= len(pref_long_str) <= 10:
-            raise ValueError("Too long (>10) prefix string")
+            raise ValueError(
+                f"Too long (>10) prefix string '{pref_long_str}'"
+                             )
 
         if not 0 <= len(self.pref_short_str) <= 1:
-            raise ValueError("Short-prefix must be 1 character-long")
+            raise ValueError(
+                f"Short-prefix '{self.short_prefix_str}' must be 1 character"
+            )
         if 'text_color' in kwargs:
             if not 0 <= kwargs['text_color'] <= 15:
                 print("[WARN] 0 <= color <= 15, using 7")
@@ -140,7 +143,12 @@ class InfoPrint():
         self.info_index = ['cont', 'info', 'act', 'list', 'warn', 'err', 'bug']
         self.short = False
         self.pad = False
-        self.flush = False
+        self.print_kwargs = {
+            'file': stdout,
+            'sep': "\t",
+            'end': "\n",
+            'flush': False,
+        }
 
     def __str__(self) -> str:
         '''
@@ -218,22 +226,20 @@ class InfoPrint():
                    'pref_gloss',
                    'text_gloss']
         mark_kwargs = {}
-        for k in mark_kw:
-            if k in kwargs:
-                mark_kwargs[k] = kwargs[k]
-                del kwargs[k]
+        for key in mark_kw:
+            if key in kwargs:
+                mark_kwargs[key] = kwargs[key]
+                del kwargs[key]
         if pref is None:
             on_the_fly = InfoMark(**mark_kwargs)
         else:
             on_the_fly = None
-        if 'flush' in kwargs:
-            flush = kwargs['flush']
-            del kwargs['flush']
-        else:
-            flush = self.flush
+        for key, default in self.print_kwargs.items():
+            if key not in kwargs:
+                kwargs[key] = default
         print(self._prefix_mark(
             mark=on_the_fly, index_str=pref, short=short, pad=pad
-        ) + str(value) + AVAIL_GLOSS[0], flush=flush, **kwargs)
+        ) + str(value) + AVAIL_GLOSS[0], **kwargs)
 
     def edit_style(self, pref_long_str, index_handle: int = None,
                    index_str: str = None, **kwargs) -> str:
