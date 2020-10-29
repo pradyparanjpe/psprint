@@ -237,10 +237,15 @@ class InfoPrint():
         for key, default in self.print_kwargs.items():
             if key not in kwargs:
                 kwargs[key] = default
-        print(self._prefix_mark(
+        if not args:
+            print()
+            return
+        args = list(args)
+        args[0] = self._prefix_mark(
             mark=on_the_fly, index_str=pref, short=short, pad=pad
-        ) + kwargs['sep'].join((str(a) for a in args)) + AVAIL_GLOSS[0],
-              **kwargs)
+        ) + str(args[0])
+        args[-1] = str(args[-1]) + AVAIL_GLOSS[0]
+        print(*args, **kwargs)
 
     def edit_style(self, pref_long_str, index_handle: int = None,
                    index_str: str = None, **kwargs) -> str:
