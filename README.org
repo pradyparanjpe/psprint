@@ -119,6 +119,7 @@
     In-line comments are unacceptible
 *** Sections
 **** DEFAULT
+     Each variablue *must* have a value, if you don't want to supply, comment it out.
      Following variables may be set as boolean value forms (yes, true, 1, false, no, 0).
      - short: Information prefix is short (1 character).
      - pad: Information prefix is fixed length, padded with <space> wherever necessary.
@@ -130,11 +131,11 @@
      - file: /Discouraged/ STDOUT gets *appended* to =file=. This may be risky as the file is _opened out of context_
      #+BEGIN_SRC conf :tangle .psprintrc
        [DEFAULT]
-       short = False
+       # short = False
        pad = True
        flush = True
-       sep =
-       end =
+       # sep =
+       # end =
      #+END_SRC
 
 **** <custom>

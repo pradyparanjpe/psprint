@@ -1,9 +1,9 @@
 [DEFAULT]
-short = False
+# short = False
 pad = True
 flush = True
-sep =
-end =
+# sep =
+# end =
 
 [help]
 pref_long_str = HELP

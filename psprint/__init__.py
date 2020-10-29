@@ -35,7 +35,7 @@ def _set_opts(rcfile) -> None:
     '''
     infile: rc file to read
     '''
-    conf = ConfigParser(allow_no_value=True)
+    conf = ConfigParser()
     conf.read(rcfile)
     for mark in conf:
         if mark == "DEFAULT":
