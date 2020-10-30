@@ -39,17 +39,16 @@ def _set_opts(rcfile) -> None:
     conf.read(rcfile)
     for mark in conf:
         if mark == "DEFAULT":
-            DEFAULT_PRINT.short =\
-                conf[mark].getboolean("short", fallback=False)
-            DEFAULT_PRINT.pad =\
-                conf[mark].getboolean("pad", fallback=False)
+            for b_sw in DEFAULT_PRINT.switches:
+                DEFAULT_PRINT.switches[b_sw] =\
+                conf[mark].getboolean(b_sw, fallback=False)
             DEFAULT_PRINT.print_kwargs['sep'] =\
                 conf[mark].get("sep", fallback="\t") or "\t"
             DEFAULT_PRINT.print_kwargs['end'] =\
                 conf[mark].get("end", fallback="\n") or "\n"
             DEFAULT_PRINT.print_kwargs['flush'] =\
                 conf[mark].getboolean("flush", fallback=False)
-            fname = conf[mark].get("file", fallback=None)  # I discourage this
+            fname = conf[mark].get("file", fallback=None)  # Discouraged
             if fname is not None:
                 DEFAULT_PRINT.print_kwargs['file'] = open(fname, "a")
         else:
