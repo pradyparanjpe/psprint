@@ -63,7 +63,9 @@ class InfoPrint():
         '''
         formatted InfoPrint().info_style
         '''
-        return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
+        outstr = '\npref\tshort\tlong\ttext\n\n'
+        outstr += "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
+        return outstr
 
     def _prefix_mark(self, mark: InfoMark, **switches) -> str:
         '''
@@ -77,7 +79,8 @@ class InfoPrint():
         '''
         switches = {**self.switches, **switches}
         pref: str = mark.pref.short if switches['short'] else mark.pref
-        pref_out = self._prefix(pref, short=switches['short'], pad=switches['pad'])
+        pref_out = self._prefix(pref, short=switches['short'],
+                                pad=switches['pad'])
         if switches['bland']:
             # Colorless output
             return pref_out
@@ -120,13 +123,14 @@ class InfoPrint():
                         pref_short_str=pref_short_str,
                         pref_args=pref_args, text_args=text_args)
 
-    def _which_mark(self, pref: StrInt = None, **kwargs)-> InfoMark:
+    def _which_mark(self, pref: StrInt = None, **kwargs) -> InfoMark:
         '''
         Define a mark based on arguments supplied
         may be a pre-defined mark
         OR
         mark defined on the fly
         '''
+        # TODO: Allow color altration on the fly even with default pref objects
         if pref is not None:
             # Pre-defined mark
             if isinstance(pref, int):
@@ -176,7 +180,6 @@ class InfoPrint():
         print_kwargs = {}
         for key, default in self.print_kwargs.items():
             print_kwargs[key] = kwargs[key] if key in kwargs else default
-
         switches = {}
         for key, default in self.switches.items():
             switches[key] = kwargs[key] if key in kwargs else default
@@ -229,3 +232,4 @@ class InfoPrint():
                 index_str = self.info_index.pop(index_handle)
         del self.info_style[index_str]
         return str(self)
+

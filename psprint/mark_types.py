@@ -66,10 +66,10 @@ class InfoMark():
             pref_long_str = pref_long_str[:10]
 
         if len(pref_short_str) > 1:
-            warn(f"Short-prefix must be 1 character, trimming",
+            warn("Short-prefix must be 1 character, trimming",
                  category=ValueWarning)
         # Styles
-        self.pref = PrintPref(val=pref_long_str, short = pref_short_str)
+        self.pref = PrintPref(val=pref_long_str, short=pref_short_str)
         self.text = PrintText()
 
         # Settings
@@ -147,14 +147,10 @@ class InfoMark():
         '''
         string format of available information
         '''
-        outstr = Style.RESET_ALL + '\tshort\tlong\ttext\n'
-        outstr += Style.RESET_ALL + 'prefix:\t{}{}{}\t{}\t{}{}{}\n'.format(
-            str(self.pref.color), str(self.pref.gloss),
-            self.pref.short, self.pref,
-            str(self.text.color), str(self.text.gloss),
-            "<CUSTOM>" + AVAIL_GLOSS[0]
-        )
-        return outstr
+        return '\t{}\t{}\t{}'.format(self.pref.effects + self.pref.short,
+                                     self.pref,
+                                     self.text.effects + "<CUSTOM>"
+                                     + Style.RESET_ALL)
 
     def get_info(self) -> str:
         '''
