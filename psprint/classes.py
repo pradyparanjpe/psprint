@@ -140,10 +140,10 @@ class InfoPrint():
         self.info_index = ['cont', 'info', 'act', 'list', 'warn', 'err', 'bug']
         self.switches = {'pad': False, 'short': False,
                          'bland': False, 'disabled': False}
+        self.mark_kwargs = {'text_color': 7, 'text_gloss': 1,
+                            'pref_color': 7, 'pref_gloss': 1, }
         self.print_kwargs = {'file': stdout, 'sep': "\t",
                              'end': "\n", 'flush': False}
-        self.mark_kwargs = {'text_color': None, 'text_gloss': None,
-                            'pref_color': None, 'pref_gloss': None}
 
     def __str__(self) -> str:
         '''
@@ -151,14 +151,15 @@ class InfoPrint():
         '''
         return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
 
-    def _prefix_mark(self, mark: InfoMark = None, index_str: InfoHandle = 0, **kwargs) -> str:
+    def _prefix_mark(self, mark: InfoMark = None,
+                     index_str: InfoHandle = 0, **kwargs) -> str:
         '''
         mark: passed info mark
         index_str: string to call info
         short: info_mark is in short form
         pad: Pad info mark
         bland: colorless info mark
-        disabled: disabled styling. Default python print function-like behaviour
+        disabled: Default python print function-like behaviour
         standard prefixed string
         '''
         kwargs = {**self.switches, **kwargs}
@@ -174,21 +175,19 @@ class InfoPrint():
         info = mark.pref_short_str if kwargs['short'] else mark.pref_long_str
         if kwargs['bland']:
             # Colorless output
-            return self._prefix(info, short=kwargs['short'], pad=pad)
-        return mark.pref_color + \
-            mark.pref_gloss + \
-            self._prefix(info, short=short, pad=pad) + \
-            mark.text_color +\
-            mark.text_gloss
+            return self._prefix(info, short=kwargs['short'], pad=kwargs['pad'])
+        return mark.pref_color + mark.pref_gloss + self._prefix(
+            info, short=kwargs['short'], pad=kwargs['pad']
+        ) + mark.text_color + mark.text_gloss
 
     def _prefix(self, info, short: bool = None, pad: bool = None) -> str:
         '''
         prepend spaces and [ ] to make it pretty
         '''
         if short is None:
-            short = self.short
+            short = self.switches['short']
         if pad is None:
-            pad = self.pad
+            pad = self.switches['pad']
         infolen = len(info)
         if not info:
             infolen = - 2
@@ -214,7 +213,7 @@ class InfoPrint():
         pref_gloss: int (1)
         text_color: int (7)
         text_gloss: int (1)
-        pref_text:  ">" }
+        pref_long_str:  ">" }
         pad: if true, print with padding after pref
         short: if true, use {pref_short_str} instead
         bland: colorless
@@ -225,26 +224,32 @@ class InfoPrint():
         if not args:
             print()
             return
-        mark_kw = ['pref_long_str', 'pref_short_str', 'pref_color',
-                   'text_color', 'pref_gloss', 'text_gloss']
 
         # Extract keys
-        print_kwargs = {**self.print_kwargs,
-                        **kwargs}.fromkeys(self.print_kwargs)
-        switches = {**self.switches, **kwargs}.fromkeys(self.switches)
+        print_kwargs = {}
+        for key, default in self.print_kwargs.items():
+            print_kwargs[key] = kwargs[key] if key in kwargs else default
+
+        switches = {}
+        for key, default in self.switches.items():
+            switches[key] = kwargs[key] if key in kwargs else default
         if switches['disabled']:
             print(*args, **print_kwargs)
             return
-        mark_kwargs = {**self.mark_kwargs, **kwargs}.fromkeys(self.mark_kwargs)
+
+        mark_kwargs = {}
+        for key, default in self.mark_kwargs.items():
+            mark_kwargs[key] = kwargs[key] if key in kwargs else default
+        for key in 'pref_long_str', 'pref_short_str':
+            mark_kwargs[key] = kwargs[key] if key in kwargs else ''
+
         if pref is None:
             on_the_fly = InfoMark(**mark_kwargs)
         else:
             on_the_fly = None
         args = list(args)
-        args[0] = self._prefix_mark(
-            mark=on_the_fly, index_str=pref, short=switches['short'],
-            pad=switches['pad']
-        ) + str(args[0])
+        args[0] = self._prefix_mark(mark=on_the_fly, index_str=pref,
+                                    **switches) + str(args[0])
         args[-1] = str(args[-1]) + AVAIL_GLOSS[0]
         print(*args, **print_kwargs)
 

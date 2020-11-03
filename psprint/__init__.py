@@ -43,9 +43,9 @@ def _set_opts(rcfile) -> None:
                 DEFAULT_PRINT.switches[b_sw] =\
                 conf[mark].getboolean(b_sw, fallback=False)
             DEFAULT_PRINT.print_kwargs['sep'] =\
-                conf[mark].get("sep", fallback="\t") or "\t"
+                conf[mark].get("sep", fallback="\t")
             DEFAULT_PRINT.print_kwargs['end'] =\
-                conf[mark].get("end", fallback="\n") or "\n"
+                conf[mark].get("end", fallback="\n")
             DEFAULT_PRINT.print_kwargs['flush'] =\
                 conf[mark].getboolean("flush", fallback=False)
             fname = conf[mark].get("file", fallback=None)  # Discouraged
@@ -58,8 +58,7 @@ def _set_opts(rcfile) -> None:
                 'index_str': mark
             }
             for key, val in conf[mark].items():
-                if key in ("index", "pref_color", "pref_gloss",
-                           "text_color", "text_gloss"):
+                if key in (DEFAULT_PRINT.mark_kwargs):
                     val = int(val)
                 kwargs[key] = val
             try:
@@ -84,7 +83,7 @@ RC_LOCATIONS = {
 
 try:
     RC_LOCATIONS['xdg_config'] = Path(
-        os.environ["XDG_CONFOG_HOME"]
+        os.environ["XDG_CONFIG_HOME"]
     ).joinpath("psprint", "style.conf")
 except KeyError:
     pass
@@ -96,8 +95,4 @@ for loc in 'root', 'user', 'config', 'xdg_config', 'local':
 
 
 PRINT = DEFAULT_PRINT.psprint
-__all__ = [
-    'InfoPrint',
-    'DEFAULT_PRINT',
-    'PRINT'
-]
+__all__ = ['InfoPrint', 'DEFAULT_PRINT', 'PRINT']
