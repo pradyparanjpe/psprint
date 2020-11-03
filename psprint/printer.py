@@ -77,7 +77,6 @@ class InfoPrint():
         disabled: Default python print function-like behaviour
         standard prefixed string
         '''
-        switches = {**self.switches, **switches}
         pref: str = mark.pref.short if switches['short'] else mark.pref
         pref_out = self._prefix(pref, short=switches['short'],
                                 pad=switches['pad'])
@@ -190,7 +189,8 @@ class InfoPrint():
         args = list(args)
         mark = self._which_mark(pref=pref, **kwargs)
         args[0] = self._prefix_mark(mark=mark, **switches) + str(args[0])
-        args[-1] = str(args[-1]) + Style.RESET_ALL
+        if not switches['bland']:
+            args[-1] = str(args[-1]) + Style.RESET_ALL
         print(*args, **print_kwargs)
 
     def edit_style(self, pref_long_str, index_handle: int = None,

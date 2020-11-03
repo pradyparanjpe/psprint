@@ -23,6 +23,7 @@ Prompt String-like Print
 
 
 import os
+import sys
 from pathlib import Path
 from configparser import ConfigParser
 from .printer import InfoPrint
@@ -83,6 +84,15 @@ except KeyError:
 for loc in 'root', 'user', 'config', 'xdg_config', 'local':
     if RC_LOCATIONS[loc].exists():
         _set_opts(RC_LOCATIONS[loc])
+
+try:
+    if not isinstance(sys.ps1, str):
+        raise AttributeError
+    if not isinstance(sys.ps2, str):
+        raise AttributeError
+except AttributeError:
+    # ps1/ps2 are not set correctly, may not be a shell
+    DEFAULT_PRINT.switches['bland'] = True
 
 
 PRINT = DEFAULT_PRINT.psprint
