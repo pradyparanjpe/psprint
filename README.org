@@ -13,6 +13,24 @@
   - [[#what-does-it-do][What does it do]]
     - [[#without-psprint][Without psprint]]
     - [[#with-psprint][With psprint]]
+  - [[#optional-arguments][Optional Arguments:]]
+    - [[#args][*args]]
+    - [[#pref][pref]]
+    - [[#pref_color][pref_color]]
+    - [[#pref_gloss][pref_gloss]]
+    -  [[#pref_bgcol][pref_bgcol]]
+    - [[#text_color][text_color]]
+    - [[#text_gloss][text_gloss]]
+    -  [[#text_bgcol][text_bgcol]]
+    - [[#pref_long_str][pref_long_str]]
+    - [[#pref_short_str][pref_short_str]]
+    - [[#pad][pad]]
+    - [[#short][short]]
+    - [[#bland][bland]]
+    - [[#disabled][disabled]]
+    - [[#file-sep-end-flush][file, sep, end, flush]]
+      - [[#color-values][color values]]
+      - [[#gloss-values][gloss values]]
 - [[#installation][Installation]]
   - [[#pip][pip]]
   - [[#pspman][pspman]]
@@ -21,7 +39,7 @@
   - [[#pspman-1][pspman]]
 - [[#configuration][Configuration]]
   - [[#location-of-configuration-files][Location of configuration files]]
-    - [[#root-linux-only][Root (LINUX ONLY):]]
+    - [[#root-unix-only][Root (UNIX ONLY):]]
     - [[#user-home][User (HOME):]]
     - [[#user-xdg_config_home][User (XDG_CONFIG_HOME):]]
     - [[#local][Local:]]
@@ -70,6 +88,93 @@
     #+END_EXAMPLE
     ...and with colors
 
+** Optional Arguments:
+*** *args
+    passed to print_function for printing
+
+*** pref
+    - type: str/int
+    - default: 0
+    - values:
+      - cont:or 0 or anything else
+      - info: or 1
+      - act:  or 2
+      - list: or 3
+      - warn: or 4
+      - error:or 5
+      - bug:  or 6 }
+
+*** pref_color
+    - type: int/str
+    - default: 7
+    - values: [[*color values][color values]]
+
+*** pref_gloss
+    - tyoe: int/str
+    - default: 1
+    - values: [[*gloss values][gloss values]]
+
+***  pref_bgcol
+    - type: int/str
+    - default: 0
+    - values: [[*color values][color values]]
+
+*** text_color
+    - type: int/str
+    - default: 7
+    - values: [[*color values][color values]]
+
+*** text_gloss
+    - tyoe: int/str
+    - default: 1
+    - values: [[*gloss values][gloss values]]
+
+***  text_bgcol
+    - type: int/str
+    - default: 0
+    - values: [[*color values][color values]]
+
+*** pref_long_str
+    - type: str
+    - default: ""
+
+*** pref_short_str
+    - type: str
+    - default: ">"
+
+*** pad
+    - pad <spaces> to start text at same indentation
+    - type: bool
+    - default: False
+
+*** short
+    - short string prefix
+    - type: bool
+    - default: False
+
+*** bland
+    - colorless output
+    - type: bool
+    - default: False
+
+*** disabled
+    - behave like print_function
+    - type: bool
+    - default: False
+
+*** file, sep, end, flush
+    - passed to print function
+
+**** color values
+     - [0, 15] standard terminal colors
+     - color names: black, red, green, yellow, blue, magenta, cyan, white, light *
+     - color letters: k, r, g, y, b, m, c, w, l*
+**** gloss values
+     - reset = r = 0  # reset effects (remove colors/styles)
+     - normal = n = 1
+     - dim = d = 2
+     - bright = b = 3
+
 * Installation
 ** pip
    Preferred method
@@ -93,7 +198,7 @@
 * Configuration
 ** Location of configuration files
    Configuration may be specified in any of the following locations:
-*** Root (LINUX ONLY):
+*** Root (UNIX ONLY):
     This is inhereted by all users of the system
 
     =/etc/psprint/style.conf=
@@ -104,7 +209,7 @@
     `$HOME/.psprintrc`
 
 *** User (XDG_CONFIG_HOME):
-    This variable is generally set to =$HOME/.config= on unix-like systems
+    This variable is generally set to =$HOME/.config= on unix-like systems.
     Even if unset, we will still try the =$HOME/.config= directory.
 
     =$XFG_CONFIG_HOME/psprint/style.conf=
@@ -140,13 +245,15 @@
 
 **** <custom>
      The <custom> string is used as prefix index while calling print function
-     Following variables may be set as integers
-     - pref_color: color of information prefix in range [0, 15]
-     - pref_style: style of information prefix in range [0, 3]
-     - text_color: color of text value in range [0, 15]
-     - text_style: color of text value in range [0, 3]
+     Following variables may be set as string names or integers (ANSI Terminal colors)
+     - pref_color: color of information prefix [black, red, g, 5, light blue]
+     - pref_gloss: brightness of information prefix [normal, n, 1, dim, d, 2, bright, b, 3]
+     - pref_bgcol: background of information prefix <same as pref_color>
+     - text_color: color of information text [black, red, g, 5, light blue]
+     - text_gloss: brightness of information text [normal, n, 1, dim, d, 2, bright, b, 3]
+     - text_bgcol: background of information text <same as text_color>
 
-     Following variables may be set as integers
+     Following variables may be set as str
      - pref_long_string: <10 character long information prefix string (long form)
      - pref_short_str: 1 character information prefix (short form)
      #+BEGIN_SRC conf :tangle .psprintrc
@@ -154,7 +261,9 @@
        pref_long_str = HELP
        pref_short_str = ?
        pref_color = 3
+       pref_bgcol = 0
        pref_style = 1
        text_color = 7
        text_style = 1
+       text_bgcol = 0
      #+END_SRC
