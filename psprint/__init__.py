@@ -25,7 +25,7 @@ Prompt String-like Print
 import os
 from pathlib import Path
 from configparser import ConfigParser
-from .classes import InfoPrint
+from .printer import InfoPrint
 
 
 DEFAULT_PRINT = InfoPrint()
@@ -41,7 +41,7 @@ def _set_opts(rcfile) -> None:
         if mark == "DEFAULT":
             for b_sw in DEFAULT_PRINT.switches:
                 DEFAULT_PRINT.switches[b_sw] =\
-                conf[mark].getboolean(b_sw, fallback=False)
+                    conf[mark].getboolean(b_sw, fallback=False)
             DEFAULT_PRINT.print_kwargs['sep'] =\
                 conf[mark].get("sep", fallback="\t")
             DEFAULT_PRINT.print_kwargs['end'] =\
