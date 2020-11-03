@@ -78,15 +78,24 @@ class PrintText():
         self.gloss = ''
         self.bgcol = ''
 
-    def __str__(self):
+    def __str__(self) -> str:
         '''
         print self
         '''
         return str(self.val)
 
-    def __len__(self):
-        '''length of value'''
+    def __len__(self) -> int:
+        '''
+        length of value
+        '''
         return len(self.val)
+
+    def __copy__(self):
+        '''
+        create a copy
+        '''
+        return PrintText(val=self.val, color=self.color,
+                         gloss=self.gloss, bgcol=self.bgcol)
 
 
 class PrintPref(PrintText):
@@ -96,3 +105,10 @@ class PrintPref(PrintText):
     def __init__(self, val='', short='>', **kwargs) -> None:
         PrintText.__init__(self, val=val.upper(), **kwargs)
         self.short = short
+
+    def __copy__(self):
+        '''
+        create a copy
+        '''
+        return PrintPref(val=self.val, short=self.short,
+                         color=self.color, gloss=self.gloss, bgcol=self.bgcol)

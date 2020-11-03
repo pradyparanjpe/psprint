@@ -104,21 +104,22 @@ class InfoPrint():
         return prefix + padstr * pad
 
     @staticmethod
-    def _new_mark(**kwargs) -> InfoMark:
+    def _new_mark(base_pref: InfoMark = None, **kwargs) -> InfoMark:
         '''
         Generate a new mark
         '''
         pref_args = {}
         for key, default in DEFAULT_STYLE.items():
-            pref_args[key] = kwargs[f'pref_{key}'] if f'pref_{key}' in kwargs\
-                else default
+            if f'pref_{key}' in kwargs:
+                pref_args[key] = kwargs[f'pref_{key}']
         text_args = {}
         for key, default in DEFAULT_STYLE.items():
-            text_args[key] = kwargs[f'text_{key}'] if f'text_{key}' in kwargs\
-                else default
+            if f'text_{key}' in kwargs:
+                text_args[key] = kwargs[f'text_{key}']
         pref_long_str = kwargs.get('pref_long_str', '')
         pref_short_str = kwargs.get('pref_short_str', '>')
-        return InfoMark(pref_long_str=pref_long_str,
+        return InfoMark(parent=base_pref,
+                        pref_long_str=pref_long_str,
                         pref_short_str=pref_short_str,
                         pref_args=pref_args, text_args=text_args)
 
@@ -129,18 +130,18 @@ class InfoPrint():
         OR
         mark defined on the fly
         '''
-        # TODO: Allow color altration on the fly even with default pref objects
+        base_pref = None
         if pref is not None:
             # Pre-defined mark
             if isinstance(pref, int):
                 if not 0 <= pref < len(self.info_index):
                     pref = 0
-                return self.info_style[self.info_index[pref]]
-            if isinstance(pref, str):
-                return self.info_style.get(pref, self.info_style['cont'])
+                base_pref = self.info_style[self.info_index[pref]]
+            elif isinstance(pref, str):
+                base_pref = self.info_style.get(pref, self.info_style['cont'])
             else:
                 raise TypeError(f"{pref} should be either str or int")
-        return self._new_mark(**kwargs)
+        return self._new_mark(base_pref, **kwargs)
 
     def psprint(self, *args, pref: StrInt = None, **kwargs) -> None:
         '''

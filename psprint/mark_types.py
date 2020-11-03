@@ -47,8 +47,9 @@ class InfoMark():
     '''
     Information object
     '''
-    def __init__(self, pref_long_str: str = '', pref_short_str: str = '>',
-                 text_args: dict = {}, pref_args: dict = {},) -> None:
+    def __init__(self, parent=None, pref_long_str: str = '',
+                 pref_short_str: str = '>', text_args: dict = {},
+                 pref_args: dict = {},) -> None:
         '''
         pref_long_str: Message-description prefix
         pref_short_str: Short-description (1 character-long)
@@ -58,8 +59,6 @@ class InfoMark():
         Initiate object
         '''
         # Standards check
-        text_args = {**DEFAULT_STYLE, **text_args}
-        pref_args = {**DEFAULT_STYLE, **pref_args}
         if len(pref_long_str) > 10:
             warn(f"Too long (>10) prefix string '{pref_long_str}', trimming",
                  category=ValueWarning)
@@ -68,17 +67,32 @@ class InfoMark():
         if len(pref_short_str) > 1:
             warn("Short-prefix must be 1 character, trimming",
                  category=ValueWarning)
+
+        # inheritance:
+        if parent is not None:
+            if pref_short_str == ">":
+                pref_short_str = parent.pref.short
+            pref_long_str = pref_long_str or str(parent.pref)
+            self.text_args = {**parent.text_args, **text_args}
+            self.pref_args = {**parent.pref_args, **pref_args}
+
+        else:
+            self.text_args = {**DEFAULT_STYLE, **text_args}
+            self.pref_args = {**DEFAULT_STYLE, **pref_args}
+
         # Styles
         self.pref = PrintPref(val=pref_long_str, short=pref_short_str)
         self.text = PrintText()
 
         # Settings
-        self.pref.color = self._color_idx_2_obj(pref_args['color'])
-        self.pref.bgcol = self._color_idx_2_obj(pref_args['bgcol'], back=True)
-        self.pref.gloss = self._gloss_idx_2_obj(pref_args['gloss'])
-        self.text.color = self._color_idx_2_obj(text_args['color'])
-        self.text.bgcol = self._color_idx_2_obj(text_args['bgcol'], back=True)
-        self.text.gloss = self._gloss_idx_2_obj(text_args['gloss'])
+        self.pref.color = self._color_idx_2_obj(self.pref_args['color'])
+        self.pref.bgcol = self._color_idx_2_obj(self.pref_args['bgcol'],
+                                                back=True)
+        self.pref.gloss = self._gloss_idx_2_obj(self.pref_args['gloss'])
+        self.text.color = self._color_idx_2_obj(self.text_args['color'])
+        self.text.bgcol = self._color_idx_2_obj(self.text_args['bgcol'],
+                                                back=True)
+        self.text.gloss = self._gloss_idx_2_obj(self.text_args['gloss'])
 
     def _color_idx_2_obj(self, color: StrInt = 7, back=False) -> str:
         '''
@@ -151,6 +165,16 @@ class InfoMark():
                                      self.pref,
                                      self.text.effects + "<CUSTOM>"
                                      + Style.RESET_ALL)
+
+    def __copy__(self):
+        '''
+        copy of instance
+        '''
+        child = InfoMark(pref_long_str=self.pref_long_str,
+                         pref_short_str=self.pref_short_str)
+        child.pref = self.pref.__copy__()
+        child.text = self.text.__copy__()
+        return child
 
     def get_info(self) -> str:
         '''
