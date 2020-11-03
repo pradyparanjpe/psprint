@@ -40,7 +40,7 @@ class PostInstall(install):
 
 setup(
     name="psprint",
-    version="0.0.0.2",
+    version="0.0.1.0",
     description="""
     psprint - Prompt String Print
     """,
