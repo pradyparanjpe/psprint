@@ -27,10 +27,16 @@ from . import PRINT as print
 
 if __name__ in ("__main__", "psprint.__main__"):
     print()
-    print("usage:", pref='err', pad=True)
-    print("Use me as an imported module", pref='info', pad=True)
-    print("from psprint import PRINT as print", pref='act', pad=True)
-    print("Tell-tales may be edited by importing info_print class", pref='list',
-          pad=True)
-    print("Bye", pref='bug', pad=True)
+    print("usage:",
+          pref='err', pad=True, short=False)
+    print("Use me as an imported module",
+          pref='info', pad=True, short=False)
+    print("from psprint import PRINT as print",
+          pref='act', pad=True, short=False)
+    print("Styles may be edited by importing the InfoPrint class",
+          pref='list', pad=True, short=False)
+    print("Or by editing its DEFAULT_PRINT instance",
+          pad=True, short=False)
+    print("Bye",
+          pref='bug', pad=True, short=False)
     print()
