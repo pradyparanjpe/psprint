@@ -52,17 +52,8 @@ def _set_opts(rcfile) -> None:
             if fname is not None:
                 DEFAULT_PRINT.print_kwargs['file'] = open(fname, "a")
         else:
-            kwargs = {
-                'pref_long_str': None,
-                'pref_short_str': None,
-                'index_str': mark
-            }
-            for key, val in conf[mark].items():
-                if key in (DEFAULT_PRINT.mark_kwargs):
-                    val = int(val)
-                kwargs[key] = val
             try:
-                DEFAULT_PRINT.edit_style(**kwargs)
+                DEFAULT_PRINT.edit_style(index_str=mark, **conf[mark])
             except ValueError as err:
                 print()
                 print(f"'{mark}' from {rcfile}")

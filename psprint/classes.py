@@ -24,18 +24,24 @@ Classes
 from sys import stdout
 from warnings import warn
 from typing import TypeVar
-from colorama import Fore, Style
+from colorama import Fore, Style, Back
 
 
 StrInt = TypeVar("StrInt", str, int)
 
 
 AVAIL_GLOSS = [Style.RESET_ALL, Style.NORMAL, Style.DIM, Style.BRIGHT]
-AVAIL_COLORS = [Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW,
-                Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE,
-                Fore.LIGHTBLACK_EX, Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX,
-                Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX,
-                Fore.LIGHTCYAN_EX, Fore.LIGHTWHITE_EX]
+FORE_COLORS = [Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW,
+               Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE,
+               Fore.LIGHTBLACK_EX, Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX,
+               Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX,
+               Fore.LIGHTCYAN_EX, Fore.LIGHTWHITE_EX]
+BACK_COLORS = [Back.BLACK, Back.RED, Back.GREEN, Back.YELLOW,
+               Back.BLUE, Back.MAGENTA, Back.CYAN, Back.WHITE,
+               Back.LIGHTBLACK_EX, Back.LIGHTRED_EX, Back.LIGHTGREEN_EX,
+               Back.LIGHTYELLOW_EX, Back.LIGHTBLUE_EX, Back.LIGHTMAGENTA_EX,
+               Back.LIGHTCYAN_EX, Back.LIGHTWHITE_EX]
+DEFAULT_STYLE = {'color': 7, 'gloss': 1, 'bgcol': 0}
 
 
 class KeyWarning(Warning):
@@ -45,44 +51,110 @@ class KeyWarning(Warning):
     pass
 
 
+class ValueWarning(Warning):
+    '''
+    Warning that a key was wrongly passed and has been interpreted as default
+    '''
+    pass
+
+
+class PrintText():
+    '''
+    Text to be printed to (ANSI) terminal
+    '''
+    def __init__(self, val='', color=Fore.WHITE,
+                 gloss=Style.NORMAL, bgcol=Back.BLACK) -> None:
+        '''
+        Plain text object
+        '''
+        self.val = str(val)
+        self.color = color
+        self.gloss = gloss
+        self.bgcol = bgcol
+
+    @property
+    def effects(self) -> str:
+        '''
+        All effects combined
+        '''
+        return self.color + self.bgcol + self.gloss
+
+    @effects.setter
+    def effects(self, val) -> None:
+        '''
+        hard set effects
+        '''
+        self.color = ''
+        self.gloss = ''
+        self.bgcol = ''
+        self.effects = val
+
+    @effects.deleter
+    def effects(self) -> None:
+        '''
+        return all effects as a single string
+        '''
+        self.color = ''
+        self.gloss = ''
+        self.bgcol = ''
+
+    def __str__(self):
+        '''
+        print self
+        '''
+        return str(self.val)
+
+    def __len__(self):
+        '''length of value'''
+        return len(self.val)
+
+
+class PrintPref(PrintText):
+    '''
+    Prefix that informs about Text
+    '''
+    def __init__(self, val='', short='>', **kwargs) -> None:
+        PrintText.__init__(self, val=val.upper(), **kwargs)
+        self.short = short
+
 class InfoMark():
     '''
     Information object
     '''
-    def __init__(self, pref_long_str: str = '',
-                 pref_short_str: str = '>', **kwargs) -> None:
+    def __init__(self, pref_long_str: str = '', pref_short_str: str = '>',
+                 text_args: dict = {}, pref_args: dict = {},) -> None:
         '''
         pref_long_str: Message-description prefix
         pref_short_str: Short-description (1 character-long)
-        pref_color: prefix color (the 16 standard terminal colors)
-        pref_gloss: prefix gloss (dim/bright)
-        text_color: Out-Text color
-        text_gloss: Out-Text gloss
+        pref_args: dict with keys: color, gloss, bgcol
+        text_args: dict with keys: color, gloss, bgcol
 
         Initiate object
         '''
-        def_args = {'pref_color': 7, 'pref_gloss': 1,
-                    'text_color': 7, 'text_gloss': 1}
-        kwargs = {**def_args, **kwargs}
-
         # Standards check
-        if not 0 <= len(pref_long_str) <= 10:
-            raise ValueError(f"Too long (>10) prefix string '{pref_long_str}'")
+        text_args = {**DEFAULT_STYLE, **text_args}
+        pref_args = {**DEFAULT_STYLE, **pref_args}
+        if len(pref_long_str) > 10:
+            warn(f"Too long (>10) prefix string '{pref_long_str}', trimming",
+                 category=ValueWarning)
+            pref_long_str = pref_long_str[:10]
 
-        if not 0 <= len(pref_short_str) <= 1:
-            raise ValueError(
-                f"Short-prefix '{self.short_prefix_str}' must be 1 character"
-            )
-
+        if len(pref_short_str) > 1:
+            warn(f"Short-prefix must be 1 character, trimming",
+                 category=ValueWarning)
         # Styles
-        self.pref_long_str: str = pref_long_str.upper()
-        self.pref_short_str: str = pref_short_str
-        self.pref_color: int = self._color_str_int_2_obj(kwargs['pref_color'])
-        self.text_color: int = self._color_str_int_2_obj(kwargs['text_color'])
-        self.pref_gloss: int = self._gloss_str_int_2_obj(kwargs['pref_gloss'])
-        self.text_gloss: int = self._gloss_str_int_2_obj(kwargs['text_gloss'])
+        self.pref = PrintPref(val=pref_long_str, short = pref_short_str)
+        self.text = PrintText()
 
-    def _color_str_int_2_obj(self, color: StrInt = 7) -> int:
+        # Settings
+        self.pref.color = self._color_idx_2_obj(pref_args['color'])
+        self.pref.bgcol = self._color_idx_2_obj(pref_args['bgcol'], back=True)
+        self.pref.gloss = self._gloss_idx_2_obj(pref_args['gloss'])
+        self.text.color = self._color_idx_2_obj(text_args['color'])
+        self.text.bgcol = self._color_idx_2_obj(text_args['bgcol'], back=True)
+        self.text.gloss = self._gloss_idx_2_obj(text_args['gloss'])
+
+    def _color_idx_2_obj(self, color: StrInt = 7, back=False) -> str:
         '''
         convert color strings to corresponding integers
         '''
@@ -115,12 +187,12 @@ class InfoMark():
                     color = idx
                     break
         if not isinstance(color, int):
-            warn("Color string was not understood, defaulting to white",
+            warn("Color string was not understood, fallback to default",
                  category=KeyWarning)
-            color = 7
-        return AVAIL_COLORS[color]
+            color = 0 if back else 7
+        return BACK_COLORS[color] if back else FORE_COLORS[color]
 
-    def _gloss_str_int_2_obj(self, gloss: StrInt = 1) -> int:
+    def _gloss_idx_2_obj(self, gloss: StrInt = 1) -> str:
         '''
         convert gloss strings to corresponding integers
         '''
@@ -134,6 +206,7 @@ class InfoMark():
                         ('r',  '0',  'reset'),
                         ('n',  '1',  'normal'),
                         ('d',  '2',  'dim'),
+                        ('b',  '3',  'bright'),
                     )
             ):
                 if gloss in alias_tup:
@@ -148,11 +221,11 @@ class InfoMark():
         '''
         string format of available information
         '''
-        outstr = AVAIL_GLOSS[0] + '\tshort\tlong\ttext\n'
-        outstr += AVAIL_GLOSS[0] + 'prefix:\t{}{}{}\t{}\t{}{}{}\n'.format(
-            str(self.pref_color), str(self.pref_gloss),
-            self.pref_short_str, self.pref_long_str,
-            str(self.text_color), str(self.text_gloss),
+        outstr = Style.RESET_ALL + '\tshort\tlong\ttext\n'
+        outstr += Style.RESET_ALL + 'prefix:\t{}{}{}\t{}\t{}{}{}\n'.format(
+            str(self.pref.color), str(self.pref.gloss),
+            self.pref.short, self.pref,
+            str(self.text.color), str(self.text.gloss),
             "<CUSTOM>" + AVAIL_GLOSS[0]
         )
         return outstr
@@ -179,26 +252,25 @@ class InfoPrint():
         # Standard info styles
         self.info_style = {
             'cont': InfoMark(pref_long_str="", pref_short_str=''),
-            'info': InfoMark(pref_long_str="inform",
-                             pref_short_str='i', pref_color=2),
-            'act': InfoMark(pref_long_str="action",
-                            pref_short_str='@', pref_color=3),
-            'list': InfoMark(pref_long_str="list",
-                             pref_short_str='·', pref_color=4),
-            'warn': InfoMark(pref_long_str="warning",
-                             pref_short_str='?', pref_color=5),
+            'info': InfoMark(pref_long_str="inform", pref_short_str='i',
+                             pref_args={'color': 2}),
+            'act': InfoMark(pref_long_str="action", pref_short_str='@',
+                            pref_args={'color': 3}),
+            'list': InfoMark(pref_long_str="list", pref_short_str='·',
+                             pref_args={'color': 4}),
+            'warn': InfoMark(pref_long_str="warning", pref_short_str='?',
+                             pref_args={'color': 5}),
             'err': InfoMark(pref_long_str="error", pref_short_str='!',
-                            pref_color=1, pref_gloss=1, text_color=1,
-                            text_gloss=2),
+                            pref_args={'color': 1, 'gloss': 3},
+                            text_args={'color': 1, 'gloss': 2}),
             'bug': InfoMark(pref_long_str="debug", pref_short_str='#',
-                            pref_color=6, text_color=6, text_gloss=2),
+                            pref_args={'color': 6},
+                            text_args={'color': 6, 'gloss': 2}),
         }
         self.max_info_size = 7
         self.info_index = ['cont', 'info', 'act', 'list', 'warn', 'err', 'bug']
         self.switches = {'pad': False, 'short': False,
                          'bland': False, 'disabled': False}
-        self.mark_kwargs = {'text_color': 7, 'text_gloss': 1,
-                            'pref_color': 7, 'pref_gloss': 1, }
         self.print_kwargs = {'file': stdout, 'sep': "\t",
                              'end': "\n", 'flush': False}
 
@@ -208,36 +280,25 @@ class InfoPrint():
         '''
         return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
 
-    def _prefix_mark(self, mark: InfoMark = None,
-                     index_str: StrInt = 0, **kwargs) -> str:
+    def _prefix_mark(self, mark: InfoMark, **switches) -> str:
         '''
         mark: passed info mark
-        index_str: string to call info
+        index_str: string to call pref
         short: info_mark is in short form
-        pad: Pad info mark
-        bland: colorless info mark
+        pad: Pad prefix
+        bland: colorless pref
         disabled: Default python print function-like behaviour
         standard prefixed string
         '''
-        kwargs = {**self.switches, **kwargs}
-        if mark is None:
-            if isinstance(index_str, int):
-                if not 0 <= index_str < len(self.info_index):
-                    index_str = 0
-                mark = self.info_style[self.info_index[index_str]]
-            elif isinstance(index_str, str):
-                mark = self.info_style.get(index_str, self.info_style['cont'])
-            else:
-                raise TypeError(f"{index_str} should be either str or int")
-        info = mark.pref_short_str if kwargs['short'] else mark.pref_long_str
-        if kwargs['bland']:
+        switches = {**self.switches, **switches}
+        pref: str = mark.pref.short if switches['short'] else mark.pref
+        pref_out = self._prefix(pref, short=switches['short'], pad=switches['pad'])
+        if switches['bland']:
             # Colorless output
-            return self._prefix(info, short=kwargs['short'], pad=kwargs['pad'])
-        return mark.pref_color + mark.pref_gloss + self._prefix(
-            info, short=kwargs['short'], pad=kwargs['pad']
-        ) + mark.text_color + mark.text_gloss
+            return pref_out
+        return mark.pref.effects + pref_out + mark.text.effects
 
-    def _prefix(self, info, short: bool = None, pad: bool = None) -> str:
+    def _prefix(self, pref: str, short: bool = None, pad: bool = None) -> str:
         '''
         prepend spaces and [ ] to make it pretty
         '''
@@ -245,19 +306,57 @@ class InfoPrint():
             short = self.switches['short']
         if pad is None:
             pad = self.switches['pad']
-        infolen = len(info)
-        if not info:
-            infolen = - 2
-        pad_len = 1 - infolen if short else self.max_info_size - infolen
+        preflen = len(pref)
+        if not pref:
+            preflen = - 2
+        pad_len = 1 - preflen if short else self.max_info_size - preflen
         if pad_len < 0:
             pad_len = 0
-        prefix = f"[{info}]" if info else ""
+        prefix = f"[{pref}]" if pref else ""
         padstr = " " + " " * pad_len
         return prefix + padstr * pad
 
+    @staticmethod
+    def _new_mark(**kwargs) -> InfoMark:
+        '''
+        Generate a new mark
+        '''
+        pref_args = {}
+        for key, default in DEFAULT_STYLE.items():
+            pref_args[key] = kwargs[f'pref_{key}'] if f'pref_{key}' in kwargs\
+                else default
+        text_args = {}
+        for key, default in DEFAULT_STYLE.items():
+            text_args[key] = kwargs[f'text_{key}'] if f'text_{key}' in kwargs\
+                else default
+        pref_long_str = kwargs.get('pref_long_str', '')
+        pref_short_str = kwargs.get('pref_short_str', '>')
+        return InfoMark(pref_long_str=pref_long_str,
+                        pref_short_str=pref_short_str,
+                        pref_args=pref_args, text_args=text_args)
+
+    def _which_mark(self, pref: StrInt = None, **kwargs)-> InfoMark:
+        '''
+        Define a mark based on arguments supplied
+        may be a pre-defined mark
+        OR
+        mark defined on the fly
+        '''
+        if pref is not None:
+            # Pre-defined mark
+            if isinstance(pref, int):
+                if not 0 <= pref < len(self.info_index):
+                    pref = 0
+                return self.info_style[self.info_index[pref]]
+            if isinstance(pref, str):
+                return self.info_style.get(pref, self.info_style['cont'])
+            else:
+                raise TypeError(f"{pref} should be either str or int")
+        return self._new_mark(**kwargs)
+
     def psprint(self, *args, pref: StrInt = None, **kwargs) -> None:
         '''
-        *args: passed on to print_function for printing
+        *args: passed to print_function for printing
         pref: str/int: pre-declared InfoMark defaults: {
         cont: or 0 or anything else
         info: or 1
@@ -268,15 +367,21 @@ class InfoPrint():
         bug:  or 6 } OR in **kwargs {
         pref_color: int/str (7)
         pref_gloss: int/str (1)
+        pref_bgcol: int/str (0)
         text_color: int/str (7)
         text_gloss: int/str (1)
-        pref_long_str:  ">" }
+        text_bgcol: int/str (0)
+        pref_long_str:  ""
+        pref_short_str:  ">"
+        }
         pad: if true, print with padding after pref
         short: if true, use {pref_short_str} instead
         bland: colorless
         disabled: behave like print_function
-
-        everyting else is passed to print_function
+        file: passed to print function
+        sep: passed to print function
+        end: passed to print function
+        flush: passed to print function
         '''
         if not args:
             print()
@@ -294,20 +399,10 @@ class InfoPrint():
             print(*args, **print_kwargs)
             return
 
-        mark_kwargs = {}
-        for key, default in self.mark_kwargs.items():
-            mark_kwargs[key] = kwargs[key] if key in kwargs else default
-        for key in 'pref_long_str', 'pref_short_str':
-            mark_kwargs[key] = kwargs[key] if key in kwargs else ''
-
-        if pref is None:
-            on_the_fly = InfoMark(**mark_kwargs)
-        else:
-            on_the_fly = None
         args = list(args)
-        args[0] = self._prefix_mark(mark=on_the_fly, index_str=pref,
-                                    **switches) + str(args[0])
-        args[-1] = str(args[-1]) + AVAIL_GLOSS[0]
+        mark = self._which_mark(pref=pref, **kwargs)
+        args[0] = self._prefix_mark(mark=mark, **switches) + str(args[0])
+        args[-1] = str(args[-1]) + Style.RESET_ALL
         print(*args, **print_kwargs)
 
     def edit_style(self, pref_long_str, index_handle: int = None,
@@ -332,8 +427,8 @@ class InfoPrint():
             self.info_index.append(index_str)
         else:
             self.info_index.insert(index_handle, index_str)
-        self.info_style[index_str] = InfoMark(pref_long_str=pref_long_str,
-                                              **kwargs)
+        self.info_style[index_str] = \
+            self._new_mark(pref_long_str=pref_long_str, **kwargs)
         return str(self)
 
     def remove_style(self, index_str: str = None,
