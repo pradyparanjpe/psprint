@@ -21,13 +21,13 @@
 Classes
 '''
 
-
 from sys import stdout
-from typing import Any, TypeVar
+from warnings import warn
+from typing import TypeVar
 from colorama import Fore, Style
 
 
-InfoHandle = TypeVar("InfoHandle", str, int)
+StrInt = TypeVar("StrInt", str, int)
 
 
 AVAIL_GLOSS = [Style.RESET_ALL, Style.NORMAL, Style.DIM, Style.BRIGHT]
@@ -36,6 +36,13 @@ AVAIL_COLORS = [Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW,
                 Fore.LIGHTBLACK_EX, Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX,
                 Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX,
                 Fore.LIGHTCYAN_EX, Fore.LIGHTWHITE_EX]
+
+
+class KeyWarning(Warning):
+    '''
+    Warning that a key was wrongly passed and has been interpreted as default
+    '''
+    pass
 
 
 class InfoMark():
@@ -66,26 +73,76 @@ class InfoMark():
             raise ValueError(
                 f"Short-prefix '{self.short_prefix_str}' must be 1 character"
             )
-        if not 0 <= kwargs['text_color'] <= 15:
-            print("[WARN] 0 <= color <= 15, using 7")
-            kwargs['text_color'] = 7
-        if not 0 <= kwargs['pref_color'] <= 15:
-            print("[WARN] 0 <= color <= 15, using 7")
-            kwargs['pref_color'] = 7
-        if not 0 <= kwargs['text_gloss'] <= 3:
-            print("[WARN] 0 <= gloss <= 3, using 1")
-            kwargs['text_gloss'] = 1
-        if not 0 <= kwargs['pref_gloss'] <= 3:
-            print("[WARN] 0 <= gloss <= 3, using 1")
-            kwargs['pref_gloss'] = 1
 
         # Styles
         self.pref_long_str: str = pref_long_str.upper()
         self.pref_short_str: str = pref_short_str
-        self.pref_color: int = AVAIL_COLORS[kwargs['pref_color']]
-        self.text_color: int = AVAIL_COLORS[kwargs['text_color']]
-        self.pref_gloss: int = AVAIL_GLOSS[kwargs['pref_gloss']]
-        self.text_gloss: int = AVAIL_GLOSS[kwargs['text_gloss']]
+        self.pref_color: int = self._color_str_int_2_obj(kwargs['pref_color'])
+        self.text_color: int = self._color_str_int_2_obj(kwargs['text_color'])
+        self.pref_gloss: int = self._gloss_str_int_2_obj(kwargs['pref_gloss'])
+        self.text_gloss: int = self._gloss_str_int_2_obj(kwargs['text_gloss'])
+
+    def _color_str_int_2_obj(self, color: StrInt = 7) -> int:
+        '''
+        convert color strings to corresponding integers
+        '''
+        if isinstance(color, int):
+            if not 0 <= color <= 15:
+                warn("0 <= color <= 15, using 7", category=KeyWarning)
+                color = 7
+        else:
+            for idx, alias_tup in enumerate(
+                    (
+                        ('k',  '0',  'black'),
+                        ('r',  '1',  'red'),
+                        ('g',  '2',  'green'),
+                        ('y',  '3',  'yellow'),
+                        ('b',  '4',  'blue'),
+                        ('m',  '5',  'magenta'),
+                        ('c',  '6',  'cyan'),
+                        ('w',  '7',  'white'),
+                        ('lk', '8',  'light black'),
+                        ('lr', '9',  'light red'),
+                        ('lg', '10', 'light green'),
+                        ('ly', '11', 'light yellow'),
+                        ('lb', '12', 'light blue'),
+                        ('lm', '13', 'light magenta'),
+                        ('lc', '14', 'light ctan'),
+                        ('lw', '15', 'light white'),
+                    )
+            ):
+                if color in alias_tup:
+                    color = idx
+                    break
+        if not isinstance(color, int):
+            warn("Color string was not understood, defaulting to white",
+                 category=KeyWarning)
+            color = 7
+        return AVAIL_COLORS[color]
+
+    def _gloss_str_int_2_obj(self, gloss: StrInt = 1) -> int:
+        '''
+        convert gloss strings to corresponding integers
+        '''
+        if isinstance(gloss, int):
+            if not 0 <= gloss <= 3:
+                warn("0 <= gloss <= 3, using 1", category=KeyWarning)
+                gloss = 1
+        else:
+            for idx, alias_tup in enumerate(
+                    (
+                        ('r',  '0',  'reset'),
+                        ('n',  '1',  'normal'),
+                        ('d',  '2',  'dim'),
+                    )
+            ):
+                if gloss in alias_tup:
+                    gloss = idx
+        if not isinstance(gloss, int):
+            warn("Gloss string was not understood, defaulting to normal",
+                 category=KeyWarning)
+            gloss = 1
+        return AVAIL_GLOSS[gloss]
 
     def __str__(self) -> str:
         '''
@@ -152,7 +209,7 @@ class InfoPrint():
         return "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
 
     def _prefix_mark(self, mark: InfoMark = None,
-                     index_str: InfoHandle = 0, **kwargs) -> str:
+                     index_str: StrInt = 0, **kwargs) -> str:
         '''
         mark: passed info mark
         index_str: string to call info
@@ -198,7 +255,7 @@ class InfoPrint():
         padstr = " " + " " * pad_len
         return prefix + padstr * pad
 
-    def psprint(self, *args, pref: InfoHandle = None, **kwargs) -> None:
+    def psprint(self, *args, pref: StrInt = None, **kwargs) -> None:
         '''
         *args: passed on to print_function for printing
         pref: str/int: pre-declared InfoMark defaults: {
@@ -209,10 +266,10 @@ class InfoPrint():
         warn: or 4
         error:or 5
         bug:  or 6 } OR in **kwargs {
-        pref_color: int (7)
-        pref_gloss: int (1)
-        text_color: int (7)
-        text_gloss: int (1)
+        pref_color: int/str (7)
+        pref_gloss: int/str (1)
+        text_color: int/str (7)
+        text_gloss: int/str (1)
         pref_long_str:  ">" }
         pad: if true, print with padding after pref
         short: if true, use {pref_short_str} instead
@@ -265,7 +322,7 @@ class InfoPrint():
         Orders:
         colors: 0:BLACK\t1:RED\t2:GREEN\t3:YELLOW
                 4:BLUE\t5:MAGENTA\t6:CYAN\t7:WHITE
-                    and their Dim/Bright versions
+                    and their light versions
         styles: 0:RESET_ALL\t1:NORMAL\t2:DIM\t3:BRIGHT
 
         returns the new (updated) info_style
