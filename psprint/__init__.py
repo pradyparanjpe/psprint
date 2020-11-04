@@ -85,6 +85,9 @@ for loc in 'root', 'user', 'config', 'xdg_config', 'local':
     if RC_LOCATIONS[loc].exists():
         _set_opts(RC_LOCATIONS[loc])
 
+if 'idlelib.run' in sys.modules:
+    # Running inside idle
+    DEFAULT_PRINT.switches['bland'] = True
 
 PRINT = DEFAULT_PRINT.psprint
 __all__ = ['InfoPrint', 'DEFAULT_PRINT', 'PRINT']
