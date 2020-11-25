@@ -183,7 +183,7 @@
    Preferred method
    =pip install psprint=
 
-** pspman
+** [[https://github.com/pradyparanjpe/pspman][pspman]]
    For automated management: updates, etc
    =pspman -s -i https://github.com/pradyparanjpe/psprint.git=
 
