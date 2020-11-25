@@ -88,6 +88,9 @@
     #+END_EXAMPLE
     ...and with colors
 
+    Screenshot:
+    [[./output.jpg]]
+
 ** Optional Arguments:
 *** *args
     passed to print_function for printing
