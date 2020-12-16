@@ -32,37 +32,6 @@ from .printer import InfoPrint
 DEFAULT_PRINT = InfoPrint()
 
 
-def _set_opts(rcfile) -> None:
-    '''
-    infile: rc file to read
-    '''
-    conf = ConfigParser()
-    conf.read(rcfile)
-    for mark in conf:
-        if mark == "DEFAULT":
-            for b_sw in DEFAULT_PRINT.switches:
-                DEFAULT_PRINT.switches[b_sw] =\
-                    conf[mark].getboolean(b_sw, fallback=False)
-            DEFAULT_PRINT.print_kwargs['sep'] =\
-                conf[mark].get("sep", fallback="\t")
-            DEFAULT_PRINT.print_kwargs['end'] =\
-                conf[mark].get("end", fallback="\n")
-            DEFAULT_PRINT.print_kwargs['flush'] =\
-                conf[mark].getboolean("flush", fallback=False)
-            fname = conf[mark].get("file", fallback=None)  # Discouraged
-            if fname is not None:
-                DEFAULT_PRINT.print_kwargs['file'] = open(fname, "a")
-        else:
-            try:
-                DEFAULT_PRINT.edit_style(index_str=mark, **conf[mark])
-            except ValueError as err:
-                print()
-                print(f"'{mark}' from {rcfile}")
-                print("couldn't be parsed due to following error:")
-                print(f"'{err}'")
-                print()
-
-
 RC_LOCATIONS = {
     'root': Path("/etc/psprint/style.conf"),
     'user': Path(os.environ["HOME"]).joinpath("." + "psprintrc"),
@@ -83,11 +52,12 @@ except KeyError:
 
 for loc in 'root', 'user', 'config', 'xdg_config', 'local':
     if RC_LOCATIONS[loc].exists():
-        _set_opts(RC_LOCATIONS[loc])
+        DEFAULT_PRINT.set_opts(RC_LOCATIONS[loc])
 
-if 'idlelib.run' in sys.modules:
+if 'idlelib.run' in sys.modules or not sys.stdout.isatty():
     # Running inside idle
     DEFAULT_PRINT.switches['bland'] = True
+
 
 PRINT = DEFAULT_PRINT.psprint
 __all__ = ['InfoPrint', 'DEFAULT_PRINT', 'PRINT']

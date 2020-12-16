@@ -22,6 +22,7 @@ Information- Prepended Print object
 '''
 
 from sys import stdout
+from configparser import ConfigParser
 from colorama import Style
 from .mark_types import InfoMark, DEFAULT_STYLE, StrInt
 
@@ -193,6 +194,36 @@ class InfoPrint():
         if not switches['bland']:
             args[-1] = str(args[-1]) + Style.RESET_ALL
         print(*args, **print_kwargs)
+
+    def set_opts(self, rcfile) -> None:
+        '''
+        infile: rc file to read
+        '''
+        conf = ConfigParser()
+        conf.read(rcfile)
+        for mark in conf:
+            if mark == "DEFAULT":
+                for b_sw in self.switches:
+                    self.switches[b_sw] =\
+                        conf[mark].getboolean(b_sw, fallback=False)
+                self.print_kwargs['sep'] =\
+                    conf[mark].get("sep", fallback="\t")
+                self.print_kwargs['end'] =\
+                    conf[mark].get("end", fallback="\n")
+                self.print_kwargs['flush'] =\
+                    conf[mark].getboolean("flush", fallback=False)
+                fname = conf[mark].get("file", fallback=None)  # Discouraged
+                if fname is not None:
+                    self.print_kwargs['file'] = open(fname, "a")
+            else:
+                try:
+                    self.edit_style(index_str=mark, **conf[mark])
+                except ValueError as err:
+                    print()
+                    print(f"'{mark}' from {rcfile}")
+                    print("couldn't be parsed due to following error:")
+                    print(f"'{err}'")
+                    print()
 
     def edit_style(self, pref_long_str, index_handle: int = None,
                    index_str: str = None, **kwargs) -> str:
