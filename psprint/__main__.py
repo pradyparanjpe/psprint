@@ -22,7 +22,7 @@ module init
 '''
 
 
-from . import PRINT as print
+from . import print
 
 
 if __name__ in ("__main__", "psprint.__main__"):

@@ -59,5 +59,6 @@ if 'idlelib.run' in sys.modules or not sys.stdout.isatty():
     DEFAULT_PRINT.switches['bland'] = True
 
 
-PRINT = DEFAULT_PRINT.psprint
+print = DEFAULT_PRINT.psprint
 __all__ = ['InfoPrint', 'DEFAULT_PRINT', 'PRINT']
+__version__ = "21.1.14"
