@@ -7,177 +7,6 @@
 #+STARTUP: overview
 #+PROPERTY: header-args :tangle t
 
-* Table of Contents :toc:
-- [[#usage][Usage]]
-  - [[#substitute-pythons-print][Substitute python's print]]
-  - [[#what-does-it-do][What does it do]]
-    - [[#without-psprint][Without psprint]]
-    - [[#with-psprint][With psprint]]
-  - [[#optional-arguments][Optional Arguments:]]
-    - [[#args][*args]]
-    - [[#pref][pref]]
-    - [[#pref_color][pref_color]]
-    - [[#pref_gloss][pref_gloss]]
-    -  [[#pref_bgcol][pref_bgcol]]
-    - [[#text_color][text_color]]
-    - [[#text_gloss][text_gloss]]
-    -  [[#text_bgcol][text_bgcol]]
-    - [[#pref_long_str][pref_long_str]]
-    - [[#pref_short_str][pref_short_str]]
-    - [[#pad][pad]]
-    - [[#short][short]]
-    - [[#bland][bland]]
-    - [[#disabled][disabled]]
-    - [[#file-sep-end-flush][file, sep, end, flush]]
-      - [[#color-values][color values]]
-      - [[#gloss-values][gloss values]]
-- [[#installation][Installation]]
-  - [[#pip][pip]]
-  - [[#pspman][pspman]]
-- [[#uninstallation][Uninstallation]]
-  - [[#pip-1][pip]]
-  - [[#pspman-1][pspman]]
-- [[#configuration][Configuration]]
-  - [[#location-of-configuration-files][Location of configuration files]]
-    - [[#root-unix-only][Root (UNIX ONLY):]]
-    - [[#user-home][User (HOME):]]
-    - [[#user-xdg_config_home][User (XDG_CONFIG_HOME):]]
-    - [[#local][Local:]]
-  - [[#configuration-format][Configuration format]]
-    - [[#comments][Comments]]
-    - [[#sections][Sections]]
-      - [[#default][DEFAULT]]
-      - [[#custom][<custom>]]
-
-* Usage
-** Substitute python's print
-   Import in your script
-   - Recommended: =from psprint import PRINT=
-   - Careless: =from psprint import PRINT as print=
-
-** What does it do
-*** Without psprint
-    The following plain print statements:
-    #+begin_src python :tangle no
-      print("An output statement which informs the user")
-      print("This statement requests the user to act")
-      print("A debugging output useless to the user")
-    #+end_src
-
-    Result:
-    #+BEGIN_EXAMPLE
-      An output statement which informs the user
-      This statement requests the user to act
-      A debugging output useless to the user
-    #+END_EXAMPLE
-    Are difficult to differentiate
-
-*** With psprint
-    #+begin_src python :tangle usage.py
-      from psprint import PRINT
-      PRINT("An output statement which informs the user", pref=1)
-      PRINT("This statement requests the user to act", pref=2)
-      PRINT("A debugging output useless to the user", pref='bug')
-    #+end_src
-
-    Result:
-    #+BEGIN_EXAMPLE
-      [INFORM]  An output statement which informs the user
-      [ACTION]  This statement requests the user to act
-      [DEBUG]   A debugging output useless to the user
-    #+END_EXAMPLE
-    ...and with colors
-
-    Screenshot:
-    [[./output.jpg]]
-
-** Optional Arguments:
-*** *args
-    passed to print_function for printing
-
-*** pref
-    - type: str/int
-    - default: 0
-    - values:
-      - cont:or 0 or anything else
-      - info: or 1
-      - act:  or 2
-      - list: or 3
-      - warn: or 4
-      - error:or 5
-      - bug:  or 6 }
-
-*** pref_color
-    - type: int/str
-    - default: 7
-    - values: [[*color values][color values]]
-
-*** pref_gloss
-    - tyoe: int/str
-    - default: 1
-    - values: [[*gloss values][gloss values]]
-
-***  pref_bgcol
-    - type: int/str
-    - default: 0
-    - values: [[*color values][color values]]
-
-*** text_color
-    - type: int/str
-    - default: 7
-    - values: [[*color values][color values]]
-
-*** text_gloss
-    - tyoe: int/str
-    - default: 1
-    - values: [[*gloss values][gloss values]]
-
-***  text_bgcol
-    - type: int/str
-    - default: 0
-    - values: [[*color values][color values]]
-
-*** pref_long_str
-    - type: str
-    - default: ""
-
-*** pref_short_str
-    - type: str
-    - default: ">"
-
-*** pad
-    - pad <spaces> to start text at same indentation
-    - type: bool
-    - default: False
-
-*** short
-    - short string prefix
-    - type: bool
-    - default: False
-
-*** bland
-    - colorless output
-    - type: bool
-    - default: False
-
-*** disabled
-    - behave like print_function
-    - type: bool
-    - default: False
-
-*** file, sep, end, flush
-    - passed to print function
-
-**** color values
-     - [0, 15] standard terminal colors
-     - color names: black, red, green, yellow, blue, magenta, cyan, white, light *
-     - color letters: k, r, g, y, b, m, c, w, l*
-**** gloss values
-     - reset = r = 0  # reset effects (remove colors/styles)
-     - normal = n = 1
-     - dim = d = 2
-     - bright = b = 3
-
 * Installation
 ** pip
    Preferred method
@@ -215,7 +44,7 @@
     This variable is generally set to =$HOME/.config= on unix-like systems.
     Even if unset, we will still try the =$HOME/.config= directory.
 
-    =$XFG_CONFIG_HOME/psprint/style.conf=
+    =$XFG_CONFIG_HOME/psprint/style.yml=
 
 *** Local:
     In the current working directory
@@ -223,12 +52,9 @@
     =.psprintrc=
 
 ** Configuration format
-*** Comments
-    In-line comments are unacceptible
 *** Sections
 **** DEFAULT
-     Each variablue *must* have a value, if you don't want to supply, comment it out.
-     Following variables may be set as boolean value forms (yes, true, 1, false, no, 0).
+     Following variables may be set as boolean value forms (yes, true, false, no).
      - short: Information prefix is short (1 character).
      - pad: Information prefix is fixed length, padded with <space> wherever necessary.
      - flush: This is passed to python's print function.
@@ -237,13 +63,13 @@
      - sep: This is passed to python's print function.
      - end: This is passed to python's print function.
      - file: /Discouraged/ STDOUT gets *appended* to =file=. This may be risky as the file is _opened out of context_
-     #+BEGIN_SRC conf :tangle .psprintrc
-       [DEFAULT]
-       # short = False
-       pad = True
-       flush = True
-       # sep =
-       # end =
+     #+BEGIN_SRC yaml :tangle .psprintrc
+       FLAGS:
+         # short = False
+         pad: True
+         flush: True
+         # sep =
+         # end =
      #+END_SRC
 
 **** <custom>
@@ -257,16 +83,45 @@
      - text_bgcol: background of information text <same as text_color>
 
      Following variables may be set as str
-     - pref_long_string: <10 character long information prefix string (long form)
-     - pref_short_str: 1 character information prefix (short form)
-     #+BEGIN_SRC conf :tangle .psprintrc
-       [help]
-       pref_long_str = HELP
-       pref_short_str = ?
-       pref_color = 3
-       pref_bgcol = 0
-       pref_style = 1
-       text_color = 7
-       text_style = 1
-       text_bgcol = 0
+     - pref: <10 character long information prefix string (long form)
+     - pref_s: 1 character information prefix (short form) /Remember quotes for special characters/
+     #+BEGIN_SRC yaml :tangle .psprintrc
+       help:
+         pref: HELP
+         pref_s: "?"
+         pref_color: yellow
+         pref_bgcol: black
+         pref_style: normal
+         text_color: white
+         text_style: normal
+         text_bgcol: black
      #+END_SRC
+
+* Usage
+** Substitute python's print
+   Import in your script
+   - =from psprint import print=
+
+** What does it do
+    #+begin_src python :tangle docs/example.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+print()
+print("*** WITHOUT PSPRINT ***")
+print("An output statement which informs the user")
+print("This statement requests the user to act")
+print("A debugging output useless to the user")
+print()
+
+from psprint import print
+print()
+print("*** WITH PSPRINT ***")
+print("An output statement which informs the user", mark=1)
+print("This statement requests the user to act", mark=2)
+print("A debugging output useless to the user", mark='bug')
+print ()
+    #+end_src
+
+    Screenshot:
+    [[./docs/output.jpg]]

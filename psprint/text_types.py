@@ -19,34 +19,30 @@
 #
 '''
 Text Parts
+
 '''
 
 
-from colorama import Fore, Back, Style
-
-
-AVAIL_GLOSS = [Style.RESET_ALL, Style.NORMAL, Style.DIM, Style.BRIGHT]
-FORE_COLORS = [Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW,
-               Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE,
-               Fore.LIGHTBLACK_EX, Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX,
-               Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX,
-               Fore.LIGHTCYAN_EX, Fore.LIGHTWHITE_EX]
-BACK_COLORS = [Back.BLACK, Back.RED, Back.GREEN, Back.YELLOW,
-               Back.BLUE, Back.MAGENTA, Back.CYAN, Back.WHITE,
-               Back.LIGHTBLACK_EX, Back.LIGHTRED_EX, Back.LIGHTGREEN_EX,
-               Back.LIGHTYELLOW_EX, Back.LIGHTBLUE_EX, Back.LIGHTMAGENTA_EX,
-               Back.LIGHTCYAN_EX, Back.LIGHTWHITE_EX]
+import typing
+import colorama
 
 
 class PrintText():
     '''
+    Plain text object
     Text to be printed to (ANSI) terminal
+
+    Args:
+        val: the text
+        color: color of text [0-15]
+        gloss: gloss of text {0: bland, 1:normal ,2: dim, 3: bright}
+        bgcol: color of background [0-15]
+
     '''
-    def __init__(self, val='', color=Fore.WHITE,
-                 gloss=Style.NORMAL, bgcol=Back.BLACK) -> None:
-        '''
-        Plain text object
-        '''
+    def __init__(self, val: typing.Union[str, list] = '',
+                 color=colorama.Fore.WHITE,
+                 gloss=colorama.Style.NORMAL,
+                 bgcol=colorama.Back.BLACK) -> None:
         self.val = str(val)
         self.color = color
         self.gloss = gloss
@@ -60,29 +56,33 @@ class PrintText():
         return self.color + self.bgcol + self.gloss
 
     @effects.setter
-    def effects(self, val) -> None:
+    def effects(self, val):
         '''
-        hard set effects
+        Value augmented with effects (color, gloss, background)
         '''
+        self.val = val
         self.color = ''
         self.gloss = ''
         self.bgcol = ''
-        self.effects = val
 
     @effects.deleter
-    def effects(self) -> None:
-        '''
-        return all effects as a single string
-        '''
+    def effects(self):
         self.color = ''
         self.gloss = ''
         self.bgcol = ''
+
+    @property
+    def style_kwargs(self):
+        '''
+        extract color, gloss, bgcol to **kwargs
+        '''
+        return {'color': self.color,'gloss': self.gloss, 'bgcol': self.bgcol}
 
     def __str__(self) -> str:
         '''
-        print self
+        Human readable form
         '''
-        return str(self.val)
+        return self.effects + str(self.val) + colorama.Style.RESET_ALL
 
     def __len__(self) -> int:
         '''
@@ -97,14 +97,55 @@ class PrintText():
         return PrintText(val=self.val, color=self.color,
                          gloss=self.gloss, bgcol=self.bgcol)
 
+    def copy(self):
+        '''
+        method to create a copy
+        '''
+        return self.__copy__()
+
+    def to_str(self, bland: bool = False) -> str:
+        '''
+        Human readable form
+
+        Args:
+            bland: colorless pref
+
+        '''
+        out_str = [str(self.val)]
+        if not bland:
+            out_str.insert(0, self.effects)
+            out_str.append(colorama.Style.RESET_ALL)
+        return ''.join(out_str)
+
 
 class PrintPref(PrintText):
     '''
     Prefix that informs about Text
+
+    Args:
+        val: str: prefix in long format
+        pad_to: int: pad with `space` to length
+        short: str: prefix in short format
+        color: : color of text
+        gloss: : gloss of text
+        bgcol: : color of background
+
+    Arguments:
+        short: str: short representation of val
+        pad_to: int: pad long_str to
+
     '''
-    def __init__(self, val='', short='>', **kwargs) -> None:
-        PrintText.__init__(self, val=val.upper(), **kwargs)
+    def __init__(self, val: str = None,  short: str = '>', pad_to: int = 0,
+                 **kwargs) -> None:
         self.short = short
+        if val is None:
+            kwargs['val'] = ''
+            self.pad_len = 2
+        else:
+            self.pad_len = 0
+            kwargs['val'] = val.upper()
+        self.pad_len += max(pad_to - len(kwargs['val']), 0)
+        super().__init__(**kwargs)
 
     def __copy__(self):
         '''
@@ -112,3 +153,34 @@ class PrintPref(PrintText):
         '''
         return PrintPref(val=self.val, short=self.short,
                          color=self.color, gloss=self.gloss, bgcol=self.bgcol)
+
+    def to_str(self, **kwargs) -> str:
+        '''
+        Print value with effects
+
+        Args:
+            short: prefix in short form?
+            pad: Pad prefix
+            bland: colorless pref
+'''
+        if not kwargs.get('short'):
+            out_str = [super().to_str(bland=kwargs.get('bland'))]
+            if self.val:
+                out_str.insert(0, "[")
+                out_str.append("]")
+            if kwargs.get('pad'):
+                out_str.append(self.pad_len * " " + " ")
+        else:
+            out_str = [self.short]
+            if self.short:
+                out_str.insert(0, "[")
+                out_str.append("]")
+            if not kwargs.get('bland'):
+                out_str.insert(0, self.effects)
+                out_str.append(colorama.Style.RESET_ALL)
+            if kwargs.get('pad'):
+                if self.short:
+                    out_str.append(" ")
+                else:
+                    out_str.append("    ")
+        return ''.join(out_str)

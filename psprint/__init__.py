@@ -21,44 +21,69 @@
 Prompt String-like Print
 '''
 
-
 import os
 import sys
-from pathlib import Path
-from configparser import ConfigParser
+import typing
+import pathlib
 from .printer import InfoPrint
 
 
-DEFAULT_PRINT = InfoPrint()
+# Initiate default print function
+def init_print(custom: str = None) -> InfoPrint:
+    '''
+    Initiate ps-print function with default marks
+    and marks read from various psprintrc configurarion files:
+
+    Args:
+        custom: custom configuration file location
+
+    '''
+    # psprintrc file locations
+    user_home = pathlib.Path(os.environ.get("HOME"))
+    config = user_home.joinpath(".config")  # default
+    rc_locations = {
+        'root': pathlib.Path("/etc/psprint/style.yml"),
+        'user': user_home.joinpath("." + "psprintrc"),  # bad habit
+        'config': pathlib.Path(
+            os.environ.get("XDG_CONFIG_HOME", str(config))
+        ).joinpath("psprint", "style.yml"),  # good habit
+        'local': pathlib.Path('.').resolve().joinpath("." + "psprintrc"),
+        'custom': None,
+    }
+
+    if custom is not None:
+        rc_locations['custom'] = pathlib.Path(custom)
+
+    default_config = os.path.join(os.path.dirname(__file__), "style.yml")
+    default_print = InfoPrint(config=default_config)
+
+    for loc in ('root', 'user', 'config', 'local', 'custom'):
+        # DONT: deliberately loc from tuple to ascertain order
+        if rc_locations[loc] is not None and rc_locations[loc].exists():
+            default_print.set_opts(rc_locations[loc])
+
+    if 'idlelib.run' in sys.modules or not sys.stdout.isatty():
+        # Running inside idle
+        default_print.switches['bland'] = True
+    return default_print
 
 
-RC_LOCATIONS = {
-    'root': Path("/etc/psprint/style.conf"),
-    'user': Path(os.environ["HOME"]).joinpath("." + "psprintrc"),
-    'config': Path(os.environ["HOME"]).joinpath(
-        ".config", "psprint", "style.conf"
-    ),
-    'xdg_config': Path().joinpath("psprintrc"),  # juvenile user|fails
-    'local': Path(os.getcwd()).joinpath("." + "psprintrc"),
-}
 
-try:
-    RC_LOCATIONS['xdg_config'] = Path(
-        os.environ["XDG_CONFIG_HOME"]
-    ).joinpath("psprint", "style.conf")
-except KeyError:
-    pass
+DEFAULT_PRINT = init_print()
+'''
+InfoPrint object created by reading defaults from various
+psprintrc and psprint/style.yml files
 
-
-for loc in 'root', 'user', 'config', 'xdg_config', 'local':
-    if RC_LOCATIONS[loc].exists():
-        DEFAULT_PRINT.set_opts(RC_LOCATIONS[loc])
-
-if 'idlelib.run' in sys.modules or not sys.stdout.isatty():
-    # Running inside idle
-    DEFAULT_PRINT.switches['bland'] = True
-
+'''
 
 print = DEFAULT_PRINT.psprint
-__all__ = ['InfoPrint', 'DEFAULT_PRINT', 'PRINT']
-__version__ = "21.1.14"
+'''
+psprint function for imports
+
+'''
+
+
+__all__ = ['DEFAULT_PRINT', 'print']
+
+
+__version__ = "21.1.16"

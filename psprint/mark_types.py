@@ -12,176 +12,219 @@
 # psprint is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
+# GNU Lesser General Public License for more details. #
 # You should have received a copy of the GNU Lesser General Public License
 # along with psprint.  If not, see <https://www.gnu.org/licenses/>.
 #
 '''
 Information Marker
+
 '''
 
-from typing import TypeVar
-from warnings import warn
+import os
+import typing
+import warnings
 from colorama import Fore, Back, Style
-from .warn_types import KeyWarning, ValueWarning
+import yaml
+from .errors import KeyWarning, ValueWarning
 from .text_types import PrintPref, PrintText
 
 
-StrInt = TypeVar("StrInt", str, int)
 DEFAULT_STYLE = {'color': 7, 'gloss': 1, 'bgcol': 0}
+'''
+Default Styles: white color, normal Gloss, black background
+'''
 AVAIL_GLOSS = [Style.RESET_ALL, Style.NORMAL, Style.DIM, Style.BRIGHT]
+'''
+Gloss for easy referencing: 0: reset_all, 1: normal, 2: dim, 3: bright
+'''
 FORE_COLORS = [Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW,
                Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE,
                Fore.LIGHTBLACK_EX, Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX,
                Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX,
                Fore.LIGHTCYAN_EX, Fore.LIGHTWHITE_EX]
+'''
+Colors for easy referencing:
+0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
+Light-: 7 + `above`
+'''
 BACK_COLORS = [Back.BLACK, Back.RED, Back.GREEN, Back.YELLOW,
                Back.BLUE, Back.MAGENTA, Back.CYAN, Back.WHITE,
                Back.LIGHTBLACK_EX, Back.LIGHTRED_EX, Back.LIGHTGREEN_EX,
                Back.LIGHTYELLOW_EX, Back.LIGHTBLUE_EX, Back.LIGHTMAGENTA_EX,
                Back.LIGHTCYAN_EX, Back.LIGHTWHITE_EX]
+'''
+Background colors for easy referencing:
+0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
+Light-: 7 + `above`
+'''
+
+with open(os.path.join(os.path.dirname(__file__), "codes.yml"), "r") as stream:
+    _INDICES = yaml.safe_load(stream)
+
+COLOR_INDICES: typing.List[list] = _INDICES['color_indices']
+'''
+Aliases for colors: red = 1 = r, green = 2 = g, etc [loaded from codes.yml]
+'''
+GLOSS_INDICES: typing.List[list] = _INDICES['gloss_indices']
+'''
+Aliases for gloss: dim = 2 = d, etc [loaded from codes.yml]
+'''
+PREF_MAX_LEN: int = _INDICES['pref_max_len']
+'''
+Maximum length of prefix. Prefix is padded to this length if called.
+'''
 
 
 class InfoMark():
     '''
-    Information object
-    '''
-    def __init__(self, parent=None, pref_long_str: str = '',
-                 pref_short_str: str = '>', text_args: dict = {},
-                 pref_args: dict = {},) -> None:
-        '''
-        pref_long_str: Message-description prefix
-        pref_short_str: Short-description (1 character-long)
+    Prefix Mark information
+
+    Attributes:
+        pref: PrintPref: Prefix text properties
+        text: PrintText: Text properties
+
+    Args:
+        parent: Inherit information from-
+        pref: Message-description prefix
+        pref_s: Short-description (1 character-long)
+        pad_to: pad prefix to reach length
         pref_args: dict with keys: color, gloss, bgcol
         text_args: dict with keys: color, gloss, bgcol
 
-        Initiate object
-        '''
+    '''
+    def __init__(self,
+                 parent: 'InfoMark' = None,
+                 pref: str = '',
+                 pref_s: str = '>',
+                 text_args: dict = {},
+                 pref_args: dict = {},) -> None:
         # Standards check
-        if len(pref_long_str) > 10:
-            warn(f"Too long (>10) prefix string '{pref_long_str}', trimming",
-                 category=ValueWarning)
-            pref_long_str = pref_long_str[:10]
+        if len(pref) > PREF_MAX_LEN:
+            trim = pref[:PREF_MAX_LEN]
+            warnings.warn(
+                f"Prefix string '{pref}'" +
+                f" is too long (length>{PREF_MAX_LEN}) " +
+                f"trimming to {trim}",
+                category=ValueWarning
+            )
+            pref = trim
 
-        if len(pref_short_str) > 1:
-            warn("Short-prefix must be 1 character, trimming",
-                 category=ValueWarning)
-
-        # inheritance:
-        if parent is not None:
-            if pref_short_str == ">":
-                pref_short_str = parent.pref.short
-            pref_long_str = pref_long_str or str(parent.pref)
-            self.text_args = {**parent.text_args, **text_args}
-            self.pref_args = {**parent.pref_args, **pref_args}
-
-        else:
-            self.text_args = {**DEFAULT_STYLE, **text_args}
-            self.pref_args = {**DEFAULT_STYLE, **pref_args}
+        if len(pref_s) > 1:
+            trim = pref_s[:1]
+            warnings.warn(
+                "Prefix string '{pref_s}'" +
+                f" is too long (length>1) trimming to {trim}",
+                category=ValueWarning
+            )
+            pref_s = trim
 
         # Styles
-        self.pref = PrintPref(val=pref_long_str, short=pref_short_str)
+        # inheritance:
+        # Order of importance: kwargs ELSE parent ELSE default
+        if parent is not None:
+            pref_args = {**DEFAULT_STYLE,
+                         **parent.pref.style_kwargs,
+                         **pref_args}
+            text_args = {**DEFAULT_STYLE,
+                         **parent.text.style_kwargs,
+                         **text_args}
+            pref = pref or parent.pref.val
+            pref_s = pref_s if pref_s != ">" else parent.pref.short
+        else:
+            pref_args = {**DEFAULT_STYLE, **pref_args}
+            text_args = {**DEFAULT_STYLE, **text_args}
+
+        self.pref = PrintPref(val=pref, short=pref_s, pad_to=PREF_MAX_LEN)
         self.text = PrintText()
-
         # Settings
-        self.pref.color = self._color_idx_2_obj(self.pref_args['color'])
-        self.pref.bgcol = self._color_idx_2_obj(self.pref_args['bgcol'],
+        self.pref.color = self._color_idx_2_obj(pref_args['color'])
+        self.pref.bgcol = self._color_idx_2_obj(pref_args['bgcol'],
                                                 back=True)
-        self.pref.gloss = self._gloss_idx_2_obj(self.pref_args['gloss'])
-        self.text.color = self._color_idx_2_obj(self.text_args['color'])
-        self.text.bgcol = self._color_idx_2_obj(self.text_args['bgcol'],
+        self.pref.gloss = self._gloss_idx_2_obj(pref_args['gloss'])
+        self.text.color = self._color_idx_2_obj(text_args['color'])
+        self.text.bgcol = self._color_idx_2_obj(text_args['bgcol'],
                                                 back=True)
-        self.text.gloss = self._gloss_idx_2_obj(self.text_args['gloss'])
+        self.text.gloss = self._gloss_idx_2_obj(text_args['gloss'])
 
-    def _color_idx_2_obj(self, color: StrInt = 7, back=False) -> str:
+    def _color_idx_2_obj(self, color: typing.Union[str, int] = 7,
+                         back=False) -> str:
         '''
-        convert color strings to corresponding integers
+        Convert color strings to corresponding integers
+
+        Args:
+            Color: color {[0-15],[[l]krgybmcw],[[light] color_name]}
+            back: is this color for background?
+
         '''
+        if color in (*FORE_COLORS, *BACK_COLORS):
+            return color
         if isinstance(color, int):
             if not 0 <= color <= 15:
-                warn("0 <= color <= 15, using 7", category=KeyWarning)
+                warnings.warn("0 <= color <= 15, using 7", category=KeyWarning)
                 color = 7
         else:
-            for idx, alias_tup in enumerate(
-                    (
-                        ('k',  '0',  'black'),
-                        ('r',  '1',  'red'),
-                        ('g',  '2',  'green'),
-                        ('y',  '3',  'yellow'),
-                        ('b',  '4',  'blue'),
-                        ('m',  '5',  'magenta'),
-                        ('c',  '6',  'cyan'),
-                        ('w',  '7',  'white'),
-                        ('lk', '8',  'light black'),
-                        ('lr', '9',  'light red'),
-                        ('lg', '10', 'light green'),
-                        ('ly', '11', 'light yellow'),
-                        ('lb', '12', 'light blue'),
-                        ('lm', '13', 'light magenta'),
-                        ('lc', '14', 'light ctan'),
-                        ('lw', '15', 'light white'),
-                    )
-            ):
+            for idx, alias_tup in enumerate(COLOR_INDICES):
                 if color in alias_tup:
                     color = idx
                     break
         if not isinstance(color, int):
-            warn("Color string was not understood, fallback to default",
-                 category=KeyWarning)
+            warnings.warn(
+                "Color string was not understood, fallback to default",
+                category=KeyWarning
+            )
             color = 0 if back else 7
         return BACK_COLORS[color] if back else FORE_COLORS[color]
 
-    def _gloss_idx_2_obj(self, gloss: StrInt = 1) -> str:
+    def _gloss_idx_2_obj(self, gloss: typing.Union[str, int] = 1) -> str:
         '''
-        convert gloss strings to corresponding integers
+        Convert gloss strings to corresponding integers
+
+        Args:
+            gloss: gloss to text {[0-3],[rcdb],{reset,normal,dim,bright}}
         '''
+        if gloss in AVAIL_GLOSS:
+            return gloss
         if isinstance(gloss, int):
             if not 0 <= gloss <= 3:
-                warn("0 <= gloss <= 3, using 1", category=KeyWarning)
+                warnings.warn("0 <= gloss <= 3, using 1", category=KeyWarning)
                 gloss = 1
         else:
-            for idx, alias_tup in enumerate(
-                    (
-                        ('r',  '0',  'reset'),
-                        ('n',  '1',  'normal'),
-                        ('d',  '2',  'dim'),
-                        ('b',  '3',  'bright'),
-                    )
-            ):
+            for idx, alias_tup in enumerate(GLOSS_INDICES):
                 if gloss in alias_tup:
                     gloss = idx
         if not isinstance(gloss, int):
-            warn("Gloss string was not understood, defaulting to normal",
-                 category=KeyWarning)
+            warnings.warn(
+                "Gloss string was not understood, defaulting to normal",
+                category=KeyWarning
+            )
             gloss = 1
         return AVAIL_GLOSS[gloss]
 
     def __str__(self) -> str:
         '''
-        string format of available information
+        String format of available information
         '''
-        return '\t{}\t{}\t{}'.format(self.pref.effects + self.pref.short,
-                                     self.pref,
-                                     self.text.effects + "<CUSTOM>"
-                                     + Style.RESET_ALL)
+        return "\t".join(
+            ("", self.pref.effects + self.pref.short,
+             str(self.pref),
+             self.text.effects + "<CUSTOM>" + Style.RESET_ALL)
+        )
 
     def __copy__(self):
         '''
-        copy of instance
+        Copy of instance
         '''
-        child = InfoMark(pref_long_str=self.pref_long_str,
-                         pref_short_str=self.pref_short_str)
+        child = InfoMark(pref=self.pref.val, pref_s=self.pref_s)
         child.pref = self.pref.__copy__()
         child.text = self.text.__copy__()
         return child
 
     def get_info(self) -> str:
         '''
-        This is defined only because flake8 complains that the object has
-        only 1 public method
+        Print information
 
-        print information
         '''
-        print(str(self))
-        return str(self)
+        info = str(self)
+        print(info)
+        return info

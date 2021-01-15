@@ -18,7 +18,7 @@
 # along with psprint.  If not, see <https://www.gnu.org/licenses/>.
 #
 '''
-Custom warnings
+Errors and warnings
 '''
 
 
@@ -26,11 +26,23 @@ class KeyWarning(Warning):
     '''
     Warning that a key was wrongly passed and has been interpreted as default
     '''
-    pass
 
 
 class ValueWarning(Warning):
     '''
-    Warning that a key was wrongly passed and has been interpreted as default
+    Warning that a value was wrongly passed and has been interpreted as default
     '''
-    pass
+
+
+class BadMark(Exception):
+    '''
+    Error that a ``mark`` supplied in ``config`` cannot be parsed
+
+    Args:
+        mark: passed mark
+        config: config file that defined the mark
+    '''
+    def __init__(self, mark: str, config: str) -> None:
+        super().__init__(f'''
+        Prefix-mark {mark} from {config} couldn't be parsed
+        ''')
