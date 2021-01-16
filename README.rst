@@ -3,6 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+Welcome to psprint's documentation!
+===================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
 
 Documentation
 =============
@@ -196,7 +211,7 @@ What does it do
 
 Screenshot: |image0|
 
-.. |image0| image:: ./docs/output.jpg
+.. |image0| image:: ./output.jpg
 
 
 psprint

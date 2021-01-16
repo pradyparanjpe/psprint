@@ -142,3 +142,6 @@ docs/_*
 
 # pypi pushed
 pypi.sh
+
+# original README.org
+README.org
