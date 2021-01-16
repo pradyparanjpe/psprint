@@ -169,8 +169,6 @@ class PrintPref(PrintText):
                 out_str.insert(0, "[")
                 out_str.append("]")
             if kwargs.get('pad'):
-                if not self.val:
-                    out_str.append("  ")
                 out_str.append(self.pad_len * " " + " ")
         else:
             out_str = [self.short]
