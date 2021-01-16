@@ -13,7 +13,7 @@ color_indices:
 - ['ly', '11', 'light yellow']
 - ['lb', '12', 'light blue']
 - ['lm', '13', 'light magenta']
-- ['lc', '14', 'light ctan']
+- ['lc', '14', 'light cyan']
 - ['lw', '15', 'light white']
 
 gloss_indices:

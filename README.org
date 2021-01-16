@@ -1,4 +1,3 @@
-#-*- coding:utf-8; mode:org -*-
 #+TITLE: psprint
 #+AUTHOR: Pradyumna Paranjape
 #+EMAIL: pradyparanjpe@rediffmail.com
@@ -6,6 +5,11 @@
 #+OPTIONS: toc: t mathjax:t TeX:t num:t ::t :todo:nil tags:nil *:t skip:t
 #+STARTUP: overview
 #+PROPERTY: header-args :tangle t
+
+
+* Documentation
+  [[https://psprint.readthedocs.io/en/latest/?badge=latest][Read The Docs]]
+  [[https://readthedocs.org/projects/psprint/badge/?version=latest]]
 
 * Installation
 ** pip

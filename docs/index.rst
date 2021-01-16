@@ -11,6 +11,11 @@ Welcome to psprint's documentation!
    :caption: Contents:
 
 
+.. image:: https://readthedocs.org/projects/psprint/badge/?version=latest
+           :target: https://psprint.readthedocs.io/en/latest/?badge=latest
+           :alt: Documentation Status
+
+
 Indices and tables
 ==================
 
