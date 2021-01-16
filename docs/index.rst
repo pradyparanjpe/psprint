@@ -65,7 +65,7 @@ Remove repository clone ``pspman -s -d psprint``
 Configuration
 =============
 
-Although prefix can be defined on the fly by passing \**kwargs, such
+Although prefix can be defined on the fly by passing ``**kwargs``, such
 definition may be slow and should be avoided. Frequently used prefixes
 should be declared in a configuration file located at standard
 locations. Configuration file is in `yaml <https://yaml.org/spec/>`__
