@@ -22,11 +22,9 @@ Indices and tables
 Documentation
 =============
 
-`Read The Docs <https://psprint.readthedocs.io/en/latest/>`__
-
 .. image:: https://readthedocs.org/projects/psprint/badge/?version=latest
-           :target: https://psprint.readthedocs.io/en/latest/?badge=latest
-           :alt: Documentation Status
+   :target: https://psprint.readthedocs.io/en/latest/?badge=latest
+            :alt: Documentation Status
 
 
 Installation
