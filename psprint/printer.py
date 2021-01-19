@@ -287,7 +287,7 @@ class InfoPrint():
         # add prefix to *args[0]
         args = list(args)  # typecast
         if not switches.get('bland'):
-            args[0] = mark.text.effects + args[0]
-            args[-1] += colorama.Style.RESET_ALL
+            args[0] = mark.text.effects + str(args[0])
+            args[-1] = str(args[-1]) + colorama.Style.RESET_ALL
         args[0] = mark.pref.to_str(**switches) + args[0]
         print(*args, **print_kwargs)
