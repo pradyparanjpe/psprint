@@ -14,8 +14,9 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../psprint/'))
+sys.path.insert(0, os.path.abspath('../launcher_menus/'))
 import sphinx_rtd_theme
+import m2r2
 
 
 # -- Project information -----------------------------------------------------
@@ -25,7 +26,7 @@ copyright = '2021, Pradyumna Paranjape'
 author = 'Pradyumna Paranjape'
 
 # The full version, including alpha/beta/rc tags
-release = '21.1.16'
+release = '21.2.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -35,7 +36,8 @@ release = '21.1.16'
 # ones.
 extensions = [
     'sphinx.ext.todo', 'sphinx.ext.autodoc', 'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode', 'sphinx_rtd_theme'
+    'sphinx.ext.viewcode', 'sphinx_rtd_theme', "sphinx_autodoc_typehints",
+    'm2r2'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,7 +54,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

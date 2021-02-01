@@ -245,7 +245,7 @@ class InfoPrint():
                 * list or 3: [LIST]
                 * warn or 4: [WARNING]
                 * error:or 5: [ERROR]
-                * bug:  or 6 [DEBUG] }
+                * bug:  or 6 [DEBUG]
                 * `Other marks defined in .psprintrc`
 
             pref_color: color of prefix (default: 7)
