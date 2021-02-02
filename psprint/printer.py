@@ -23,11 +23,11 @@ Information- Prepended Print object
 
 import sys
 import typing
-import colorama
+import warnings
 import yaml
+from .ansi import ANSI
 from .mark_types import InfoMark, DEFAULT_STYLE
-from .text_types import PrintText
-from .errors import BadMark
+from .errors import BadMark, ValueWarning
 
 
 class InfoPrint():
@@ -38,15 +38,16 @@ class InfoPrint():
         config: path to default configuration file (shipped)
 
     Attributes:
-        info_style (dict): pre-defined prefix styles
-        info_index (list): keys of `info_style` mapped to int
-        print_kwargs (dict): library of kwargs_accepted by print_function
-        switches (dict): user-customizations: pad, short, bland, disabled
+        pref_max: int: maximum length of prefix string
+        info_style; dict: pre-defined prefix styles
+        info_index: list: keys of `info_style` mapped to int
+        print_kwargs: dict : library of kwargs_accepted by print_function
+        switches: dict: user-customizations: pad, short, bland, disabled
 
-            pad (bool): prefix is padded to start text at the same level
-            short (bool): display short, 1 character- prefix
-            bland (bool): do not show ANSI color/styles for prefix/text
-            disabled (bool): behave like python default print_function
+            pad: bool: prefix is padded to start text at the same level
+            short: bool: display short, 1 character- prefix
+            bland: bool: do not show ANSI color/styles for prefix/text
+            disabled: bool: behave like python default print_function
 
     '''
     def __init__(self, config) -> None:
@@ -55,6 +56,7 @@ class InfoPrint():
                          'bland': False, 'disabled': False}
         self.print_kwargs = {'file': sys.stdout, 'sep': "\t",
                              'end': "\n", 'flush': False}
+        self.pref_max = 7
         self.info_style = {}
         self.info_index = []
         self.set_opts(config=config)
@@ -76,6 +78,7 @@ class InfoPrint():
         for mark, settings in conf.items():
             if mark == "FLAGS":
                 # switches / flags
+                self.pref_max = settings.get("pref_max", 7)
                 for b_sw in self.switches:
                     self.switches[b_sw] = settings.get(b_sw, False)
                 self.print_kwargs['sep'] = settings.get("sep", "\t")
@@ -182,13 +185,22 @@ class InfoPrint():
         for key, default in DEFAULT_STYLE.items():
             if f'text_{key}' in kwargs:
                 text_args[key] = kwargs[f'text_{key}']
+        # Standards check
         pref = kwargs.get('pref', '')
+        if len(pref) > self.pref_max:
+            trim = pref[:self.pref_max]
+            warnings.warn(
+                f"Prefix string '{pref}'" +
+                f" is too long (length>{self.pref_max}) " +
+                f"trimming to {trim}",
+                category=ValueWarning
+            )
+            pref = trim
         pref_s = kwargs.get('pref_s', '>')
         return InfoMark(parent=base_mark,
                         pref=pref,
                         pref_s=pref_s,
-                        pref_args=pref_args, text_args=text_args,
-                        )
+                        pref_args=pref_args, text_args=text_args)
 
     def _which_mark(self, mark: typing.Union[str, int, InfoMark] = None,
                     **kwargs) -> InfoMark:
@@ -287,7 +299,7 @@ class InfoPrint():
         # add prefix to *args[0]
         args = list(args)  # typecast
         if not switches.get('bland'):
-            args[0] = mark.text.effects + str(args[0])
-            args[-1] = str(args[-1]) + colorama.Style.RESET_ALL
+            args[0] = str(mark.text) + str(args[0])
+            args[-1] = str(args[-1]) + ANSI.RESET_ALL
         args[0] = mark.pref.to_str(**switches) + args[0]
         print(*args, **print_kwargs)

@@ -58,7 +58,7 @@ def init_print(custom: str = None) -> InfoPrint:
     default_print = InfoPrint(config=default_config)
 
     for loc in ('root', 'user', 'config', 'local', 'custom'):
-        # DONT: deliberately loc from tuple to ascertain order
+        # DONT: loc from tuple, not keys(), deliberately to ascertain order
         if rc_locations[loc] is not None and rc_locations[loc].exists():
             default_print.set_opts(rc_locations[loc])
 

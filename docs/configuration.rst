@@ -22,10 +22,10 @@ User (HOME):
 **This is discouraged.** Maintaining configuration files in ``$HOME`` is
 a bad practice. Such configuration should be in ``$XDG_CONFIG_HOME``.
 
-\`$HOME/.psprintrc\`
+``$HOME/.psprintrc``
 
 User (XDG_CONFIG_HOME):
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 This variable is generally set to ``$HOME/.config`` on unix-like
 systems. Even if unset, we will still try the ``$HOME/.config``
@@ -43,8 +43,8 @@ In the current working directory
 Configuration format
 --------------------
 
-Sections
-^^^^^^^^
+Sections:
+^^^^^^^^^
 
 #. FLAGS
 

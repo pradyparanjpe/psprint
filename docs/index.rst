@@ -60,6 +60,13 @@ InfoPrint
 .. autoclass:: psprint.printer.InfoPrint
    :members:
 
+
+InfoMark
+========
+.. automodule:: psprint.mark_types
+   :members:
+
+
 Error/Warnings
 ==============
 

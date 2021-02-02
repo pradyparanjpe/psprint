@@ -24,26 +24,28 @@ Text Parts
 
 
 import typing
-import colorama
+from .ansi import ANSI
 
 
-class PrintText():
+class AnsiEffect():
     '''
     Plain text object
     Text to be printed to (ANSI) terminal
 
     Args:
-        val: the text
         color: color of text [0-15]
         gloss: gloss of text {0: bland, 1:normal ,2: dim, 3: bright}
         bgcol: color of background [0-15]
 
+    Attributes:
+        color: color of text
+        gloss: gloss of text
+        bgcol: background color
     '''
-    def __init__(self, val: typing.Union[str, list] = '',
-                 color=colorama.Fore.WHITE,
-                 gloss=colorama.Style.NORMAL,
-                 bgcol=colorama.Back.BLACK) -> None:
-        self.val = str(val)
+    def __init__(self,
+                 color: str = ANSI.FG_COLOR[-1],
+                 gloss: str = ANSI.GLOSS[1],
+                 bgcol: str = ANSI.BG_COLOR[-1]) -> None:
         self.color = color
         self.gloss = gloss
         self.bgcol = bgcol
@@ -56,11 +58,10 @@ class PrintText():
         return self.color + self.bgcol + self.gloss
 
     @effects.setter
-    def effects(self, val):
+    def effects(self):
         '''
-        Value augmented with effects (color, gloss, background)
+        Integrated effects (color, gloss, background)
         '''
-        self.val = val
         self.color = ''
         self.gloss = ''
         self.bgcol = ''
@@ -78,24 +79,17 @@ class PrintText():
         '''
         return {'color': self.color,'gloss': self.gloss, 'bgcol': self.bgcol}
 
-    def __str__(self) -> str:
-        '''
-        Human readable form
-        '''
-        return self.effects + str(self.val) + colorama.Style.RESET_ALL
-
-    def __len__(self) -> int:
-        '''
-        length of value
-        '''
-        return len(self.val)
-
     def __copy__(self):
         '''
         create a copy
         '''
-        return PrintText(val=self.val, color=self.color,
-                         gloss=self.gloss, bgcol=self.bgcol)
+        return AnsiEffect(color=self.color, gloss=self.gloss, bgcol=self.bgcol)
+
+    def __str__(self) -> str:
+        '''
+        Human readable form
+        '''
+        return self.effects
 
     def copy(self):
         '''
@@ -103,86 +97,77 @@ class PrintText():
         '''
         return self.__copy__()
 
-    def to_str(self, bland: bool = False) -> str:
-        '''
-        Human readable form
 
-        Args:
-            bland: colorless pref
-
-        '''
-        out_str = [str(self.val)]
-        if not bland:
-            out_str.insert(0, self.effects)
-            out_str.append(colorama.Style.RESET_ALL)
-        return ''.join(out_str)
-
-
-class PrintPref(PrintText):
+class PrintPref():
     '''
     Prefix that informs about Text
 
     Args:
-        val: str: prefix in long format
-        pad_to: int: pad with `space` to length
+        pref: str: prefix in long format
         short: str: prefix in short format
+        pad_to: int: pad with `space` to length
         color: : color of text
         gloss: : gloss of text
         bgcol: : color of background
 
     Arguments:
-        short: str: short representation of val
-        pad_to: int: pad long_str to
+        pref: tuple: prefix long, short
+        pad: tuple: pad long, short
+        effect: AnsiEffect: color/gloss effects
 
     '''
-    def __init__(self, val: str = None,  short: str = '>', pad_to: int = 0,
+    def __init__(self, pref: str = '', short: str = '>', pad_to: int = 0,
                  **kwargs) -> None:
-        self.short = short
-        if val is None:
-            kwargs['val'] = ''
-            self.pad_len = 2
-        else:
-            self.pad_len = 0
-            kwargs['val'] = val.upper()
-        self.pad_len += max(pad_to - len(kwargs['val']), 0)
-        super().__init__(**kwargs)
+        self.effects = AnsiEffect(**kwargs)
+        # 0: long, 1: short
+        self.brackets = [1, 1]
+        pad_max = (pad_to, 1)
+        pad_len: typing.List[int] = [0, 0]
+        self.pref = [pref.upper(), short.upper()]
+        for idx, pref in enumerate(self.pref):
+            if not pref:
+                # pref is blank
+                self.brackets[idx] = (0, 0)
+                pad_len[idx] += 2  # corresponding to `[]`
+            pad_len[idx]
+            pad_len[idx] += max(pad_max[idx] - len(pref), 0)
+        self.pad = [' ' * span for span in pad_len]
 
     def __copy__(self):
         '''
         create a copy
         '''
-        return PrintPref(val=self.val, short=self.short,
-                         color=self.color, gloss=self.gloss, bgcol=self.bgcol)
+        new_copy = PrintPref()
+        new_copy.effects = self.effects.copy()
+        new_copy.pref = self.pref.copy()
+        new_copy.pad = self.pad.copy()
+        return new_copy
+
+    def __len__(self) -> int:
+        '''
+        length of prefix
+        '''
+        return len(self.pref[0])
 
     def to_str(self, **kwargs) -> str:
         '''
-        Print value with effects
+        Print prefix with effects
 
         Args:
             short: prefix in short form?
             pad: Pad prefix
             bland: colorless pref
-'''
-        if not kwargs.get('short'):
-            out_str = [super().to_str(bland=kwargs.get('bland'))]
-            if self.val:
-                out_str.insert(0, "[")
-                out_str.append("]")
-            if kwargs.get('pad'):
-                if not self.val:
-                    out_str.append("  ")
-                out_str.append(self.pad_len * " " + " ")
-        else:
-            out_str = [self.short]
-            if self.short:
-                out_str.insert(0, "[")
-                out_str.append("]")
-            if not kwargs.get('bland'):
-                out_str.insert(0, self.effects)
-                out_str.append(colorama.Style.RESET_ALL)
-            if kwargs.get('pad'):
-                if self.short:
-                    out_str.append(" ")
-                else:
-                    out_str.append("    ")
-        return ''.join(out_str)
+        '''
+        pref_typ = int(kwargs.get('short'))  # 1 if short, else 0
+        parts = {
+            'ansi': '' if kwargs.get('bland') else str(self.effects),
+            'text': self.pref[pref_typ],
+            'brackets': self.brackets[pref_typ],
+            'pref_pad': self.pad[pref_typ] if kwargs.get('pad') else ''
+        }
+        return ''.join([parts['ansi'],
+                        '['* parts['brackets'],
+                        parts['text'],
+                        ']'* parts['brackets'],
+                        parts['pref_pad'],
+                        ANSI.RESET_ALL])
