@@ -51,51 +51,55 @@ Sections:
    Following variables may be set as boolean value forms (yes, true,
    false, no).
 
-   -  short: Information prefix is short (1 character).
-   -  pad: Information prefix is fixed length, padded with <space>
-      wherever necessary.
-   -  flush: This is passed to python's print function.
+   - ``short``: Information prefix is short (1 character).
+   - ``bland``: Information prefix lacks ansi style (color/gloss).
+   - ``disabled``: Behave like python3 native print.
+   - ``pad``: Information prefix is fixed length, padded with <space>.
+     wherever necessary.
+   - ``flush``: This is passed to python's print function.
 
-   Following variables may be set to string values
+   Following variables may be set to string values:
 
-   -  sep: This is passed to python's print function.
-   -  end: This is passed to python's print function.
-   -  file: *Discouraged* ``STDOUT`` gets appended to ``file``. This may
-      be risky as the file is opened out of context.
+   - ``sep``: This is passed to python's native print function.
+   - ``end``: This is passed to python's native print function.
+   - ``file``: *Discouraged* ``STDOUT`` gets appended to ``file``. This may
+     be risky as the file is opened out of context.
+   - ``pref_max_len``: Maximum length of prefix
 
    .. code:: yaml
 
       FLAGS:
-        # short = False
+        # short: False
         pad: True
         flush: True
-        # sep =
-        # end =
+        # sep:
+        # end:
+        pref_max_len: 7
 
 #. ``custom``
 
-   The ``custom`` string is used as prefix index while calling print
-   function Following variables may be set as string names or integers
-   (ANSI Terminal colors)
+   The string ``custom`` is used as prefix index while calling print
+   function.
 
-   -  pref_color: color of information prefix [black, red, g, 5,
-      light blue]
-   -  pref_gloss: brightness of information prefix [normal, n,
-      1, dim, d, 2, bright, b, 3]
-   -  pref_bgcol: background of information prefix <same as
-      pref_color>
-   -  text_color: color of information text [black, red, g, 5,
-      light blue]
-   -  text_gloss: brightness of information text [normal, n, 1,
-      dim, d, 2, bright, b, 3]
-   -  text_bgcol: background of information text <same as
-      text_color>
+   Following variables may be set as string names or integers
+   (ANSI Terminal colors) [black, red, g, 5, light blue]
+
+   - ``pref_color``: color of information prefix
+   - ``pref_bgcol``: background of information prefix
+   - ``text_color``: color of information text
+   - ``text_bgcol``: background of information text
+
+   Following variables may be set as strings or integers representing gloss
+   [dim, b, 2]
+
+   - ``pref_gloss``: brightness of information prefix
+   - ``text_gloss``: brightness of information text
 
    Following variables may be set as str
 
-   -  pref: <7 character long information prefix string (long form)
-   -  pref_s: 1 character information prefix (short form)
-      *Remember quotes for special characters*
+   - ``pref``: character long information prefix string (long form)
+   - ``pref_s``: 1 character information prefix (short form)
+     *Remember to quote "" special characters*
 
    .. code:: yaml
 

@@ -1,30 +1,32 @@
+FLAGS:
+  pref_max_len: 7
+
 cont:
   pref: ""
   pref_s: ''
 
 info:
-  pref: inform
+  pref: INFORM
   pref_s: "i"
   pref_color: green
 
 act:
-  pref: action
+  pref: ACTION
   pref_s: "@"
   pref_color: yellow
 
-
 list:
-  pref: list
+  pref: LIST
   pref_s: "·"
   pref_color: blue
 
 warn:
-  pref: warning
+  pref: WARNING
   pref_s: "*"
   pref_color: magenta
 
 err:
-  pref: error
+  pref: ERROR
   pref_s: "!"
   pref_color: red
   pref_gloss: bright
@@ -32,7 +34,7 @@ err:
   text_gloss: dim
 
 bug:
-  pref: debug
+  pref: DEBUG
   pref_s: "#"
   pref_color: cyan
   text_color: cyan

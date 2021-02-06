@@ -31,7 +31,7 @@ if __name__ in ("__main__", "psprint.__main__"):
     print("Use me as an imported module", mark='info', pad=True, short=False)
     print("from psprint import PRINT as print",
           mark='act', pad=True, short=False)
-    print("Styles may be edited by importing the InfoPrint class",
+    print("Styles may be edited by importing the PrintSpace class",
           mark='list', pad=True, short=False)
     print("Or by editing its DEFAULT_PRINT instance",
           pad=True, short=False)

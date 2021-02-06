@@ -22,19 +22,16 @@ Information Marker
 '''
 
 import warnings
+import typing
 from .ansi import ANSI
 from .errors import KeyWarning, ValueWarning
 from .text_types import PrintPref, AnsiEffect
 
 
-DEFAULT_STYLE = {'color': 16, 'gloss': 1, 'bgcol': 16}
+DEFAULT_STYLE: typing.Dict[str, int] = {'color': 16, 'gloss': 1, 'bgcol': 16}
 '''
-Default Styles: white color, normal Gloss, black background
-'''
+Terminal-determined color, black background, normal gloss
 
-
-'''
-Maximum length of prefix. Prefix is padded to this length if called.
 '''
 
 
@@ -48,77 +45,77 @@ class InfoMark():
 
     Args:
         parent: Inherit information from-
-        pref: Message-description prefix
-        pref_s: Short-description (1 character-long)
-        pad_to: pad prefix to reach length
-        pref_args: dict with keys: color, gloss, bgcol
-        text_args: dict with keys: color, gloss, bgcol
+        pref_max: pad prefix to reach length
+        **kwargs:
+            * code:
+
+                * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
+
+            * for-
+
+                * pref_color: color of of prefix
+                * pref_gloss: gloss of prefix
+                * pref_bgcol: background color of prefix
+                * text_color: color of of text
+                * text_gloss: gloss of text
+                * text_bgcol: background color of text
 
     '''
-    def __init__(self,
-                 parent: 'InfoMark' = None,
-                 pref: str = '',
-                 pref_s: str = '>',
-                 text_args: dict = {},
-                 pref_args: dict = {},) -> None:
-        if len(pref_s) > 1:
-            trim = pref_s[:1]
+    def __init__(self, parent: 'InfoMark' = None,
+                 pref_max: int = None,
+                 **kwargs: typing.Union[str, str]) -> None:
+        if pref_max is None:
+            pref_max = 7  # default
+
+        # categorise kwargs
+        pref_args = {}
+        for key, default in DEFAULT_STYLE.items():
+            if f'pref_{key}' in kwargs:
+                pref_args[key] = kwargs[f'pref_{key}']
+        text_args = {}
+        for key, default in DEFAULT_STYLE.items():
+            if f'text_{key}' in kwargs:
+                text_args[key] = kwargs[f'text_{key}']
+
+        # Determine prefixes
+        pref = [kwargs.get('pref', ''), kwargs.get('pref_s', '>')]
+        if pref[0] is not None and len(pref[0]) > pref_max:
+            trim = pref[0][:pref_max]
             warnings.warn(
-                "Prefix string '{pref_s}'" +
+                f"Prefix string '{pref[0]}'" +
+                f" is too long (length>{pref_max}) " +
+                f"trimming to {trim}",
+                category=ValueWarning
+            )
+            pref[0] = trim
+        if pref[1] is not None and len(pref[1]) > 1:
+            trim = pref[1][:1]
+            warnings.warn(
+                "Prefix string '{pref[1]}'" +
                 f" is too long (length>1) trimming to {trim}",
                 category=ValueWarning
             )
-            pref_s = trim
+            pref[1] = trim
+        parent_pref = parent.pref if parent else None
+        parent_text = parent.text if parent else None
 
-        # Styles
-        # inheritance:
-        # Order of importance: kwargs ELSE parent ELSE default
-        if parent is not None:
-            pref_args = {**DEFAULT_STYLE,
-                         **parent.pref.style_kwargs,
-                         **pref_args}
-            text_args = {**DEFAULT_STYLE,
-                         **parent.text.style_kwargs,
-                         **text_args}
-            pref = pref or parent.pref.val
-            pref_s = pref_s if pref_s != ">" else parent.pref.short
-        else:
-            pref_args = {**DEFAULT_STYLE, **pref_args}
-            text_args = {**DEFAULT_STYLE, **text_args}
-
-        self.pref = PrintPref(pref=pref, short=pref_s, pad_to=pref_max)
-        self.text = AnsiEffect()
-        # Settings
-        self.pref.color = ANSI.FG_COLORS[pref_args['color']]
-        self.pref.color = ANSI.BG_COLORS[pref_args['color']]
-        self.pref.gloss = ANSI.GLOSS[pref_args['gloss']]
-
-        self.text.color = ANSI.FG_COLORS[text_args['color']]
-        self.text.color = ANSI.BG_COLORS[text_args['color']]
-        self.text.gloss = ANSI.GLOSS[text_args['gloss']]
+        self.pref = PrintPref(parent=parent_pref, pref=pref,
+                              pref_max=pref_max, **pref_args)
+        self.text = AnsiEffect(parent=parent_text, **text_args)
 
     def __str__(self) -> str:
         '''
         String format of available information
         '''
         return "\t".join(
-            ("", self.pref.effects + self.pref.short,
-             str(self.pref),
-             self.text.effects + "<CUSTOM>" + ANSI.RESET_ALL)
+            (str(self.pref.style), self.pref.pref[0], self.pref.pref[1],
+             self.text.style + "<CUSTOM>" + ANSI.RESET_ALL)
         )
-
-    def __copy__(self):
-        '''
-        Copy of instance
-        '''
-        child = InfoMark(pref=self.pref.val, pref_s=self.pref_s)
-        child.pref = self.pref.__copy__()
-        child.text = self.text.__copy__()
-        return child
 
     def get_info(self) -> str:
         '''
-        Print information
+        Print information about ``InfoMark``
 
         '''
         info = str(self)

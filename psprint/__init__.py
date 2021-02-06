@@ -25,11 +25,11 @@ import os
 import sys
 import typing
 import pathlib
-from .printer import InfoPrint
+from .printer import PrintSpace
 
 
 # Initiate default print function
-def init_print(custom: str = None) -> InfoPrint:
+def init_print(custom: str = None) -> PrintSpace:
     '''
     Initiate ps-print function with default marks
     and marks read from various psprintrc configurarion files:
@@ -55,7 +55,7 @@ def init_print(custom: str = None) -> InfoPrint:
         rc_locations['custom'] = pathlib.Path(custom)
 
     default_config = os.path.join(os.path.dirname(__file__), "style.yml")
-    default_print = InfoPrint(config=default_config)
+    default_print = PrintSpace(config=default_config)
 
     for loc in ('root', 'user', 'config', 'local', 'custom'):
         # DONT: loc from tuple, not keys(), deliberately to ascertain order
@@ -71,7 +71,7 @@ def init_print(custom: str = None) -> InfoPrint:
 
 DEFAULT_PRINT = init_print()
 '''
-InfoPrint object created by reading defaults from various
+PrintSpace object created by reading defaults from various
 psprintrc and psprint/style.yml files
 
 '''
@@ -86,4 +86,4 @@ psprint function for imports
 __all__ = ['DEFAULT_PRINT', 'print']
 
 
-__version__ = "21.2.1"
+__version__ = "21.2.6"

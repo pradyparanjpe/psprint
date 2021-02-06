@@ -25,6 +25,8 @@ Text Parts
 
 import typing
 from .ansi import ANSI
+from .errors import (BadColor, BadGloss, BadBGCol,
+                     BadPrefix, BadShortPrefix)
 
 
 class AnsiEffect():
@@ -41,61 +43,65 @@ class AnsiEffect():
         color: color of text
         gloss: gloss of text
         bgcol: background color
+
+    Raises:
+        BadColor
+        BadGloss
+        BadBGCol
+
     '''
-    def __init__(self,
-                 color: str = ANSI.FG_COLOR[-1],
-                 gloss: str = ANSI.GLOSS[1],
-                 bgcol: str = ANSI.BG_COLOR[-1]) -> None:
-        self.color = color
-        self.gloss = gloss
-        self.bgcol = bgcol
+    def __init__(self, parent = None, color: str = None,
+                 gloss: str = None, bgcol: str = None) -> None:
+        # inherit
+        self.color, self.gloss, self.bgcol = self.inherit(parent)
+
+        # modify
+        try:
+            self.color = ANSI.FG_COLORS[color] if color else self.color
+        except KeyError as err:
+            raise BadColor(color) from None
+        try:
+            self.gloss = ANSI.GLOSS[gloss] if gloss else self.gloss
+        except KeyError as err:
+            raise BadGloss(gloss) from None
+        try:
+            self.bgcol = ANSI.BG_COLORS[bgcol] if bgcol else self.bgcol
+        except KeyError as err:
+            raise BadBGCol(bgcol) from None
+
+    def inherit(self, parent):
+        '''
+        object without parent
+        set attributes to defaults
+        '''
+        if parent is None:
+            return ANSI.FG_COLORS['t'], ANSI.GLOSS['n'], ANSI.BG_COLORS['t']
+        return parent.color, parent.gloss, parent.bgcol
 
     @property
-    def effects(self) -> str:
+    def style(self) -> str:
         '''
-        All effects combined
+        All style combined
         '''
         return self.color + self.bgcol + self.gloss
 
-    @effects.setter
-    def effects(self):
-        '''
-        Integrated effects (color, gloss, background)
-        '''
+    @style.deleter
+    def style(self):
         self.color = ''
         self.gloss = ''
         self.bgcol = ''
-
-    @effects.deleter
-    def effects(self):
-        self.color = ''
-        self.gloss = ''
-        self.bgcol = ''
-
-    @property
-    def style_kwargs(self):
-        '''
-        extract color, gloss, bgcol to **kwargs
-        '''
-        return {'color': self.color,'gloss': self.gloss, 'bgcol': self.bgcol}
-
-    def __copy__(self):
-        '''
-        create a copy
-        '''
-        return AnsiEffect(color=self.color, gloss=self.gloss, bgcol=self.bgcol)
 
     def __str__(self) -> str:
         '''
         Human readable form
         '''
-        return self.effects
+        return self.style
 
-    def copy(self):
+    def __repr__(self) -> str:
         '''
-        method to create a copy
+        repr(self)
         '''
-        return self.__copy__()
+        return ' '.join((repr(self.color), repr(self.gloss), repr(self.bgcol)))
 
 
 class PrintPref():
@@ -103,45 +109,63 @@ class PrintPref():
     Prefix that informs about Text
 
     Args:
-        pref: str: prefix in long format
-        short: str: prefix in short format
-        pad_to: int: pad with `space` to length
-        color: : color of text
-        gloss: : gloss of text
-        bgcol: : color of background
+        parent: template object for style
+        pref: prefix in [long, short] format
+        pref_max: pad with `space` to length
+        **kwargs:
+            * code:
+
+                * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
+
+            * for-
+
+                * color: color of of prefix
+                * gloss: gloss of prefix
+                * bgcol: background color of prefix
+
 
     Arguments:
         pref: tuple: prefix long, short
+        brackets: tuple: bool long, short
         pad: tuple: pad long, short
-        effect: AnsiEffect: color/gloss effects
+        style: AnsiEffect: color/gloss style
+
+    Raises:
+        BadPrefix
+        BadShortPrefix
 
     '''
-    def __init__(self, pref: str = '', short: str = '>', pad_to: int = 0,
-                 **kwargs) -> None:
-        self.effects = AnsiEffect(**kwargs)
-        # 0: long, 1: short
+    def __init__(self, parent=None, pref: typing.List[str] = [None, None],
+                 pref_max: int = 0, **kwargs) -> None:
         self.brackets = [1, 1]
-        pad_max = (pad_to, 1)
+        style, self.pref = self._inherit(parent=parent, pref=pref)
+        self.style = AnsiEffect(parent=style, **kwargs)
+        # 0: long, 1: short
+        pad_max = (pref_max, 1)
         pad_len: typing.List[int] = [0, 0]
-        self.pref = [pref.upper(), short.upper()]
-        for idx, pref in enumerate(self.pref):
-            if not pref:
-                # pref is blank
-                self.brackets[idx] = (0, 0)
+        for idx, pref_type in enumerate(self.pref):
+            if not (isinstance(pref_type, str) or pref_type is None):
+                raise (BadPrefix, BadShortPrefix)[idx](pref_type) from None
+            if not pref_type:
+                # pref_type is blank
+                self.brackets[idx] = 0
                 pad_len[idx] += 2  # corresponding to `[]`
             pad_len[idx]
-            pad_len[idx] += max(pad_max[idx] - len(pref), 0)
-        self.pad = [' ' * span for span in pad_len]
+            pad_len[idx] += max(pad_max[idx] - len(pref_type), 0)
+        self.pad = [' ' * (span+1) for span in pad_len]
 
-    def __copy__(self):
+    def _inherit(self, parent=None,
+                 pref: typing.List[str] = [None, None]
+                 ) -> typing.Tuple[AnsiEffect, list]:
         '''
-        create a copy
+        inherit pref and style from parent if not supplied
         '''
-        new_copy = PrintPref()
-        new_copy.effects = self.effects.copy()
-        new_copy.pref = self.pref.copy()
-        new_copy.pad = self.pad.copy()
-        return new_copy
+        if parent is None:
+            return None, pref
+        pref[0] = pref[0] or parent.pref[0]
+        pref[1] = pref[1] or parent.pref[1]
+        return parent.style, pref
 
     def __len__(self) -> int:
         '''
@@ -151,7 +175,7 @@ class PrintPref():
 
     def to_str(self, **kwargs) -> str:
         '''
-        Print prefix with effects
+        Print prefix with style
 
         Args:
             short: prefix in short form?
@@ -160,14 +184,17 @@ class PrintPref():
         '''
         pref_typ = int(kwargs.get('short'))  # 1 if short, else 0
         parts = {
-            'ansi': '' if kwargs.get('bland') else str(self.effects),
+            'ansi': '' if kwargs.get('bland') else str(self.style),
             'text': self.pref[pref_typ],
             'brackets': self.brackets[pref_typ],
             'pref_pad': self.pad[pref_typ] if kwargs.get('pad') else ''
         }
-        return ''.join([parts['ansi'],
-                        '['* parts['brackets'],
-                        parts['text'],
-                        ']'* parts['brackets'],
-                        parts['pref_pad'],
-                        ANSI.RESET_ALL])
+        return ''.join([
+            parts['ansi'],
+            '['* parts['brackets'],
+            parts['text'],
+            ']'* parts['brackets'],
+            ANSI.RESET_ALL,
+            parts['pref_pad'],
+        ])
+

@@ -22,21 +22,23 @@ Errors and warnings
 '''
 
 
-class KeyWarning(Warning):
+class PSPrintError(Exception):
     '''
-    Warning that a key was wrongly passed and has been interpreted as default
-    '''
-
-
-class ValueWarning(Warning):
-    '''
-    Warning that a value was wrongly passed and has been interpreted as default
+    Base error from PSPrint
     '''
 
 
-class BadMark(Exception):
+class PSPrintWarning(Warning):
     '''
-    Error that a ``mark`` supplied in ``config`` cannot be parsed
+    Base warning category from PSPrint
+    '''
+    def __init__(self, error):
+        super().__init__(error)
+
+
+class BadMark(PSPrintError):
+    '''
+    A ``mark`` supplied in ``config`` cannot be parsed
 
     Args:
         mark: passed mark
@@ -46,3 +48,90 @@ class BadMark(Exception):
         super().__init__(f'''
         Prefix-mark {mark} from {config} couldn't be parsed
         ''')
+
+
+class BadPref(Exception):
+    '''
+    Prefix Style declared incorrectly
+
+    Args:
+        key: key
+        value: (Bad) value supplied
+
+    '''
+    def __init__(self, key, value):
+        super().__init__(f'''
+        Bad value {value} for {key}
+        ''')
+
+
+class BadStyle(Exception):
+    '''
+    Style declared incorrectly
+
+    Args:
+        key: key
+        value: (Bad) value supplied
+
+    '''
+    def __init__(self, key, value):
+        super().__init__(f'''
+        Bad value {repr(value)} for style {key}
+        ''')
+
+
+class BadPrefix(BadPref):
+    '''
+    Prefix string Error
+
+    '''
+    def __init__(self, prefix):
+        super().__init__('pref', prefix)
+
+
+class BadShortPrefix(BadPref):
+    '''
+    Prefix short string Error
+
+    '''
+    def __init__(self, pref_s):
+        super().__init__('pref_s', pref_s)
+
+
+class BadColor(BadStyle):
+    '''
+    Color Error
+
+    '''
+    def __init__(self, color):
+        super().__init__('color', color)
+
+
+class BadGloss(BadStyle):
+    '''
+    Gloss Error
+
+    '''
+    def __init__(self, gloss):
+        super().__init__('gloss', gloss)
+
+
+class BadBGCol(BadStyle):
+    '''
+    Background Color Error
+
+    '''
+    def __init__(self, bgcol):
+        super().__init__('bgcol', bgcol)
+
+
+class KeyWarning(PSPrintWarning):
+    '''
+    Warning that a key was wrongly passed and has been interpreted as default
+    '''
+
+
+class ValueWarning(PSPrintWarning):
+    '''
+    Warning that a value was wrongly passed and has been interpreted as default
+    '''

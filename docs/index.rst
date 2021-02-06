@@ -55,9 +55,9 @@ psprint
 .. automodule:: psprint
    :members:
 
-InfoPrint
-=========
-.. autoclass:: psprint.printer.InfoPrint
+PrintSpace
+==========
+.. autoclass:: psprint.printer.PrintSpace
    :members:
 
 
@@ -66,6 +66,11 @@ InfoMark
 .. automodule:: psprint.mark_types
    :members:
 
+
+TextTypes
+=========
+.. automodule:: psprint.text_types
+   :members:
 
 Error/Warnings
 ==============

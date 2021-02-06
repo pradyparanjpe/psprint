@@ -30,7 +30,7 @@ from .mark_types import InfoMark, DEFAULT_STYLE
 from .errors import BadMark, ValueWarning
 
 
-class InfoPrint():
+class PrintSpace():
     '''
     Fancy Print class that also prints the type of message
 
@@ -56,7 +56,7 @@ class InfoPrint():
                          'bland': False, 'disabled': False}
         self.print_kwargs = {'file': sys.stdout, 'sep': "\t",
                              'end': "\n", 'flush': False}
-        self.pref_max = 7
+        self.pref_max = None
         self.info_style = {}
         self.info_index = []
         self.set_opts(config=config)
@@ -78,7 +78,7 @@ class InfoPrint():
         for mark, settings in conf.items():
             if mark == "FLAGS":
                 # switches / flags
-                self.pref_max = settings.get("pref_max", 7)
+                self.pref_max = settings.get("pref_max_len", None)
                 for b_sw in self.switches:
                     self.switches[b_sw] = settings.get(b_sw, False)
                 self.print_kwargs['sep'] = settings.get("sep", "\t")
@@ -99,7 +99,7 @@ class InfoPrint():
             self.info_index = list(filter(lambda x: x in self.info_style,
                                           info_index))
 
-    def edit_style(self, pref: str, index_int: int = None,
+    def edit_style(self, index_int: int = None,
                    mark: str = None, **kwargs) -> str:
         '''
         Edit loaded style
@@ -107,40 +107,48 @@ class InfoPrint():
         Args:
             index_int: Index number that will call this InfoMark
             mark: Mark string that will call this ``InfoMark``
-            pref_color: color of of prefix
-            pref_gloss: gloss of prefix
-            pref_bgcol: background color of prefix
-            pref: str: prefix string long [length < 10 characters]
-            pref_s: str: prefix string short [1 character]
-            text_color: color of of text
-            text_gloss: gloss of text
-            text_bgcol: background color of text
+            **kwargs:
+                * pref: str: prefix string long [length < 10 characters]
+                * pref_s: str: prefix string short [1 character]
+                * code:
 
-                * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
-                * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
+                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
+
+                * for-
+
+                    * pref_color: color of of prefix
+                    * pref_gloss: gloss of prefix
+                    * pref_bgcol: background color of prefix
+                    * text_color: color of of text
+                    * text_gloss: gloss of text
+                    * text_bgcol: background color of text
 
         Returns
-            Summary of new (updated) ``InfoPrint``
+            Summary of new (updated) ``PrintSpace``
 
         '''
+        # correct pref
+        if kwargs['pref'] is None:
+            raise ValueError(str)
+        if mark is None:
+            mark = kwargs['pref'][:4]
         if index_int is None or \
            not 0 <= index_int <= len(self.info_index):
             self.info_index.append(mark)
         else:
             self.info_index.insert(index_int, mark)
-        self.info_style[mark] = \
-            self._new_mark(pref=pref, **kwargs)
+        self.info_style[mark] = InfoMark(pref_max=self.pref_max, **kwargs)
         return str(self)
 
-    def remove_style(self, mark: str = None,
-                     index_int: int = None) -> str:
+    def remove_style(self, mark: str = None, index_int: int = None) -> str:
         '''
         Args:
         mark: is popped out of defined styles
         index_handle: is used to locate index_str if it is not provided
 
         Returns
-            Summary of new (updated) ``InfoPrint``
+            Summary of new (updated) ``PrintSpace``
 
         '''
         if mark is None:
@@ -154,53 +162,9 @@ class InfoPrint():
         Returns:
             Formatted summary of info_style
         '''
-        outstr = '\npref\tshort\tlong\ttext\n\n'
+        outstr = '\npref\tlong\tshort\ttext\n\n'
         outstr += "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
         return outstr
-
-    def _new_mark(self, base_mark: InfoMark = None, **kwargs) -> InfoMark:
-        '''
-        Generate a new mark
-        By either modifying a pre-defined base or anew
-
-        Args:
-            base_mark: basal ``InfoMark`` to modify
-            pref_color: color of of prefix
-            pref_gloss: gloss of prefix {0:bland, 1:normal, 2:dim, 3:bright}
-            pref_bgcol: background color of prefix
-            pref: prefix string long [length < 10 characters]
-            pref_s: prefix string short [1 character]
-            text_color: color of of text
-            text_gloss: gloss of text {0:bland, 1:normal, 2:dim, 3:bright}
-            text_bgcol: background color of text
-
-        '''
-        pref_args = {}
-
-        # categorise kwargs
-        for key, default in DEFAULT_STYLE.items():
-            if f'pref_{key}' in kwargs:
-                pref_args[key] = kwargs[f'pref_{key}']
-        text_args = {}
-        for key, default in DEFAULT_STYLE.items():
-            if f'text_{key}' in kwargs:
-                text_args[key] = kwargs[f'text_{key}']
-        # Standards check
-        pref = kwargs.get('pref', '')
-        if len(pref) > self.pref_max:
-            trim = pref[:self.pref_max]
-            warnings.warn(
-                f"Prefix string '{pref}'" +
-                f" is too long (length>{self.pref_max}) " +
-                f"trimming to {trim}",
-                category=ValueWarning
-            )
-            pref = trim
-        pref_s = kwargs.get('pref_s', '>')
-        return InfoMark(parent=base_mark,
-                        pref=pref,
-                        pref_s=pref_s,
-                        pref_args=pref_args, text_args=text_args)
 
     def _which_mark(self, mark: typing.Union[str, int, InfoMark] = None,
                     **kwargs) -> InfoMark:
@@ -213,14 +177,22 @@ class InfoPrint():
 
         Args:
             mark: mark that identifies a defined prefix
-            pref: prefix string long [length < 10 characters]
-            pref_s: prefix string short [1 character]
-            pref_color: color of of prefix
-            pref_gloss: gloss of prefix {0:bland, 1:normal, 2:dim, 3:bright}
-            pref_bgcol: background color of prefix
-            text_color: color of of text
-            text_gloss: gloss of text {0:bland, 1:normal, 2:dim, 3:bright}
-            text_bgcol: background color of text
+            **kwargs:
+                * pref: str: prefix string long [length < 10 characters]
+                * pref_s: str: prefix string short [1 character]
+                * code:
+
+                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
+
+                * for-
+
+                    * pref_color: color of of prefix
+                    * pref_gloss: gloss of prefix
+                    * pref_bgcol: background color of prefix
+                    * text_color: color of of text
+                    * text_gloss: gloss of text
+                    * text_bgcol: background color of text
 
         '''
         base_mark: InfoMark = self.info_style['cont']
@@ -239,7 +211,7 @@ class InfoPrint():
         if any(arg in kwargs for arg in ['pref', 'pref_s',
                 'pref_color', 'pref_gloss', 'pref_bgcol',
                 'text_color', 'text_gloss', 'text_bgcol',]):
-            return self._new_mark(base_mark, **kwargs)
+            return InfoMark(parent=base_mark, pref_max=self.pref_max, **kwargs)
         return base_mark
 
     def psprint(self, *args, mark: typing.Union[str, int, InfoMark] = None,
@@ -260,26 +232,31 @@ class InfoPrint():
                 * bug:  or 6 [DEBUG]
                 * `Other marks defined in .psprintrc`
 
-            pref_color: color of prefix (default: 7)
-            pref_gloss: gloss of prefix (default: 1)
-            pref_bgcol: background of prefix (default: 0)
-            text_color: color of text (default: 7)
-            text_gloss: gloss of text (default: 1)
-            text_bgcol: background of text (default: 0)
+            **kwargs:
+                * pref: str: prefix string long [length < 10 characters]
+                * pref_s: str: prefix string short [1 character]
+                * code:
 
-                * color: {[0-15],[[l]krgybmcw],[[light] `color_name`]}
-                * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
+                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
 
-            pref: str: prefix string, long version (default: `blank`)
-            pref_s: str: prefix string, short version (default: `blank`)
-            pad: bool: prefix is padded to start text at the same level
-            short: bool: display short, 1 character- prefix
-            bland: bool: do not show ANSI color/styles for prefix/text
-            disabled: bool: behave like python default print_function
-            file: typing.IO: passed to print function
-            sep: str: passed to print function
-            end: str: passed to print function
-            flush: bool: passed to print function
+                * for-
+
+                    * pref_color: color of of prefix
+                    * pref_gloss: gloss of prefix
+                    * pref_bgcol: background color of prefix
+                    * text_color: color of of text
+                    * text_gloss: gloss of text
+                    * text_bgcol: background color of text
+
+                * pad: bool: prefix is padded to start text at the same level
+                * short: bool: display short, 1 character- prefix
+                * bland: bool: do not show ANSI color/styles for prefix/text
+                * disabled: bool: behave like python default print_function
+                * file: typing.IO: passed to print function
+                * sep: str: passed to print function
+                * end: str: passed to print function
+                * flush: bool: passed to print function
 
         Raises:
             BadMark
