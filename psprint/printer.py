@@ -23,11 +23,10 @@ Information- Prepended Print object
 
 import sys
 import typing
-import warnings
 import yaml
 from .ansi import ANSI
-from .mark_types import InfoMark, DEFAULT_STYLE
-from .errors import BadMark, ValueWarning
+from .mark_types import InfoMark
+from .errors import BadMark
 
 
 class PrintSpace():
@@ -57,8 +56,8 @@ class PrintSpace():
         self.print_kwargs = {'file': sys.stdout, 'sep': "\t",
                              'end': "\n", 'flush': False}
         self.pref_max = None
-        self.info_style = {}
-        self.info_index = []
+        self.info_style: typing.Dict[str, InfoMark] = {}
+        self.info_index: typing.List[str] = []
         self.set_opts(config=config)
 
     def set_opts(self, config) -> None:
@@ -72,7 +71,7 @@ class PrintSpace():
             BadMark
 
         '''
-        info_index: list = None
+        info_index: typing.Optional[typing.Dict[str, str]] = None
         with open(config, 'r') as rcfile:
             conf: typing.Dict[str, dict] = yaml.safe_load(rcfile)
         for mark, settings in conf.items():
@@ -93,8 +92,8 @@ class PrintSpace():
                 # Mark definition
                 try:
                     self.edit_style(mark=mark, **settings)
-                except ValueError as err:
-                    raise BadMark(str(mark), rcfile) from None
+                except ValueError:
+                    raise BadMark(str(mark), rcfile.name) from None
         if info_index is not None:
             self.info_index = list(filter(lambda x: x in self.info_style,
                                           info_index))
@@ -145,15 +144,20 @@ class PrintSpace():
         '''
         Args:
         mark: is popped out of defined styles
-        index_handle: is used to locate index_str if it is not provided
+        index_int: is used to locate index_str if it is not provided
 
         Returns
             Summary of new (updated) ``PrintSpace``
 
         '''
         if mark is None:
-            if index_int < len(self.info_style):
-                mark = self.info_index.pop(index_int)
+            if index_int is not None:
+                if index_int < len(self.info_style):
+                    mark = self.info_index.pop(index_int)
+        if mark is None:
+            raise SyntaxError('''
+            At least one of mark and index_int should be provided
+            ''')
         del self.info_style[mark]
         return str(self)
 
@@ -208,9 +212,11 @@ class PrintSpace():
                 base_mark = self.info_style.get(mark) or base_mark
             else:
                 raise BadMark(mark=str(mark), config="**kwargs")
-        if any(arg in kwargs for arg in ['pref', 'pref_s',
-                'pref_color', 'pref_gloss', 'pref_bgcol',
-                'text_color', 'text_gloss', 'text_bgcol',]):
+        if any(arg in kwargs for arg in [
+                'pref', 'pref_s', 'pref_color',
+                'pref_gloss', 'pref_bgcol', 'text_color', 'text_gloss',
+                'text_bgcol',
+        ]):
             return InfoMark(parent=base_mark, pref_max=self.pref_max, **kwargs)
         return base_mark
 
@@ -268,15 +274,15 @@ class PrintSpace():
         switches = {key: {**self.switches, **kwargs}[key]
                     for key in self.switches}
         if switches['disabled'] or not args:
-            print(*args, **print_kwargs)
+            print(*args, **print_kwargs)  # type: ignore
             return
 
         mark = self._which_mark(mark=mark, **kwargs)
 
         # add prefix to *args[0]
-        args = list(args)  # typecast
+        args_l = list(args)  # typecast
         if not switches.get('bland'):
-            args[0] = str(mark.text) + str(args[0])
-            args[-1] = str(args[-1]) + ANSI.RESET_ALL
-        args[0] = mark.pref.to_str(**switches) + args[0]
-        print(*args, **print_kwargs)
+            args_l[0] = str(mark.text) + str(args_l[0])
+            args_l[-1] = str(args_l[-1]) + ANSI.RESET_ALL
+        args_l[0] = mark.pref.to_str(**switches) + args_l[0]
+        print(*args_l, **print_kwargs)  # type: ignore

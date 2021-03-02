@@ -23,7 +23,6 @@ Prompt String-like Print
 
 import os
 import sys
-import typing
 import pathlib
 from .printer import PrintSpace
 
@@ -39,7 +38,7 @@ def init_print(custom: str = None) -> PrintSpace:
 
     '''
     # psprintrc file locations
-    user_home = pathlib.Path(os.environ.get("HOME"))
+    user_home = pathlib.Path(os.environ["HOME"])
     config = user_home.joinpath(".config")  # default
     rc_locations = {
         'root': pathlib.Path("/etc/psprint/style.yml"),
@@ -59,14 +58,14 @@ def init_print(custom: str = None) -> PrintSpace:
 
     for loc in ('root', 'user', 'config', 'local', 'custom'):
         # DONT: loc from tuple, not keys(), deliberately to ascertain order
-        if rc_locations[loc] is not None and rc_locations[loc].exists():
-            default_print.set_opts(rc_locations[loc])
+        if rc_locations[loc] is not None:
+            if rc_locations[loc].exists():  # type: ignore
+                default_print.set_opts(rc_locations[loc])
 
     if 'idlelib.run' in sys.modules or not sys.stdout.isatty():
         # Running inside idle
         default_print.switches['bland'] = True
     return default_print
-
 
 
 DEFAULT_PRINT = init_print()
@@ -75,6 +74,7 @@ PrintSpace object created by reading defaults from various
 psprintrc and psprint/style.yml files
 
 '''
+
 
 print = DEFAULT_PRINT.psprint
 '''
@@ -86,4 +86,4 @@ psprint function for imports
 __all__ = ['DEFAULT_PRINT', 'print']
 
 
-__version__ = "21.2.6"
+__version__ = "21.3.1"

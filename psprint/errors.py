@@ -32,8 +32,6 @@ class PSPrintWarning(Warning):
     '''
     Base warning category from PSPrint
     '''
-    def __init__(self, error):
-        super().__init__(error)
 
 
 class BadMark(PSPrintError):

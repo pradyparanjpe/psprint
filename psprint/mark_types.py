@@ -24,7 +24,7 @@ Information Marker
 import warnings
 import typing
 from .ansi import ANSI
-from .errors import KeyWarning, ValueWarning
+from .errors import ValueWarning
 from .text_types import PrintPref, AnsiEffect
 
 
@@ -70,11 +70,11 @@ class InfoMark():
 
         # categorise kwargs
         pref_args = {}
-        for key, default in DEFAULT_STYLE.items():
+        for key in DEFAULT_STYLE:
             if f'pref_{key}' in kwargs:
                 pref_args[key] = kwargs[f'pref_{key}']
         text_args = {}
-        for key, default in DEFAULT_STYLE.items():
+        for key in DEFAULT_STYLE:
             if f'text_{key}' in kwargs:
                 text_args[key] = kwargs[f'text_{key}']
 
@@ -97,8 +97,8 @@ class InfoMark():
                 category=ValueWarning
             )
             pref[1] = trim
-        parent_pref = parent.pref if parent else None
-        parent_text = parent.text if parent else None
+        parent_pref = parent.pref if parent else None  # type: ignore
+        parent_text = parent.text if parent else None  # type: ignore
 
         self.pref = PrintPref(parent=parent_pref, pref=pref,
                               pref_max=pref_max, **pref_args)

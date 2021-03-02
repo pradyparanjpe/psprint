@@ -25,8 +25,7 @@ Text Parts
 
 import typing
 from .ansi import ANSI
-from .errors import (BadColor, BadGloss, BadBGCol,
-                     BadPrefix, BadShortPrefix)
+from .errors import BadColor, BadGloss, BadBGCol, BadPrefix, BadShortPrefix
 
 
 class AnsiEffect():
@@ -50,7 +49,7 @@ class AnsiEffect():
         BadBGCol
 
     '''
-    def __init__(self, parent = None, color: str = None,
+    def __init__(self, parent=None, color: str = None,
                  gloss: str = None, bgcol: str = None) -> None:
         # inherit
         self.color, self.gloss, self.bgcol = self.inherit(parent)
@@ -58,18 +57,19 @@ class AnsiEffect():
         # modify
         try:
             self.color = ANSI.FG_COLORS[color] if color else self.color
-        except KeyError as err:
+        except KeyError:
             raise BadColor(color) from None
         try:
             self.gloss = ANSI.GLOSS[gloss] if gloss else self.gloss
-        except KeyError as err:
+        except KeyError:
             raise BadGloss(gloss) from None
         try:
             self.bgcol = ANSI.BG_COLORS[bgcol] if bgcol else self.bgcol
-        except KeyError as err:
+        except KeyError:
             raise BadBGCol(bgcol) from None
 
-    def inherit(self, parent):
+    @staticmethod
+    def inherit(parent):
         '''
         object without parent
         set attributes to defaults
@@ -136,7 +136,7 @@ class PrintPref():
         BadShortPrefix
 
     '''
-    def __init__(self, parent=None, pref: typing.List[str] = [None, None],
+    def __init__(self, parent=None, pref: typing.List[str] = None,
                  pref_max: int = 0, **kwargs) -> None:
         self.brackets = [1, 1]
         style, self.pref = self._inherit(parent=parent, pref=pref)
@@ -151,18 +151,20 @@ class PrintPref():
                 # pref_type is blank
                 self.brackets[idx] = 0
                 pad_len[idx] += 2  # corresponding to `[]`
-            pad_len[idx]
             pad_len[idx] += max(pad_max[idx] - len(pref_type), 0)
         self.pad = [' ' * (span+1) for span in pad_len]
 
-    def _inherit(self, parent=None,
-                 pref: typing.List[str] = [None, None]
-                 ) -> typing.Tuple[AnsiEffect, list]:
+    @staticmethod
+    def _inherit(
+            parent=None, pref: typing.List[str] = None
+    ) -> typing.Tuple[typing.Union[AnsiEffect, None], list]:
         '''
         inherit pref and style from parent if not supplied
         '''
         if parent is None:
-            return None, pref
+            return None, pref or ['', '']
+        if pref is None:
+            pref = [parent.pref[0], parent.pref[1]]
         pref[0] = pref[0] or parent.pref[0]
         pref[1] = pref[1] or parent.pref[1]
         return parent.style, pref
@@ -182,7 +184,7 @@ class PrintPref():
             pad: Pad prefix
             bland: colorless pref
         '''
-        pref_typ = int(kwargs.get('short'))  # 1 if short, else 0
+        pref_typ = int(kwargs.get('short', False))  # 1 if short, else 0
         parts = {
             'ansi': '' if kwargs.get('bland') else str(self.style),
             'text': self.pref[pref_typ],
@@ -191,10 +193,9 @@ class PrintPref():
         }
         return ''.join([
             parts['ansi'],
-            '['* parts['brackets'],
+            '[' * parts['brackets'],
             parts['text'],
-            ']'* parts['brackets'],
+            ']' * parts['brackets'],
             ANSI.RESET_ALL,
             parts['pref_pad'],
         ])
-
