@@ -21,9 +21,12 @@
 Information- Prepended Print object
 '''
 
+import os
 import sys
 import typing
+
 import yaml
+
 from .ansi import ANSI
 from .mark_types import InfoMark
 from .errors import BadMark
@@ -49,7 +52,7 @@ class PrintSpace():
             disabled: bool: behave like python default print_function
 
     '''
-    def __init__(self, config) -> None:
+    def __init__(self, config: os.PathLike) -> None:
         # Standard info styles
         self.switches = {'pad': False, 'short': False,
                          'bland': False, 'disabled': False}
@@ -60,7 +63,7 @@ class PrintSpace():
         self.info_index: typing.List[str] = []
         self.set_opts(config=config)
 
-    def set_opts(self, config) -> None:
+    def set_opts(self, config: os.PathLike = None) -> None:
         '''
         Configure from rcfile
 
@@ -71,6 +74,8 @@ class PrintSpace():
             BadMark
 
         '''
+        if config is None:
+            return
         info_index: typing.Optional[typing.Dict[str, str]] = None
         with open(config, 'r') as rcfile:
             conf: typing.Dict[str, dict] = yaml.safe_load(rcfile)
@@ -128,7 +133,7 @@ class PrintSpace():
 
         '''
         # correct pref
-        if kwargs['pref'] is None:
+        if kwargs.get('pref') is None:
             raise ValueError(str)
         if mark is None:
             mark = kwargs['pref'][:4]

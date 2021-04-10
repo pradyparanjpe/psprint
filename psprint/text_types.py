@@ -24,6 +24,7 @@ Text Parts
 
 
 import typing
+
 from .ansi import ANSI
 from .errors import BadColor, BadGloss, BadBGCol, BadPrefix, BadShortPrefix
 

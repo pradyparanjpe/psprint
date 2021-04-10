@@ -1,20 +1,31 @@
+#########
+PSPRINT
+#########
+
+*********
+Gist
+*********
+
+Source Code Repository
+=======================
+
+|source| `Repository <https://github.com/pradyparanjpe/psprint.git>`__
+
+
+Badges
+======
+
+|Documentation Status|  |PyPi Version|  |PyPi Format|  |PyPi Pyversion|
+
+
+************
 Description
-===========
+************
 
 Prompt-String-like Print.
 
 [ INFO ]Print statements with a flexible descriptor prefix for better
 readability.
-
-Documentation
-=============
-
-|Documentation Status|
-
-Source Code
-===========
-
-|source| `Repository <https://github.com/pradyparanjpe/psprint.git>`__
 
 What does it do
 ===============
@@ -50,3 +61,15 @@ Screenshot:
    :target: https://psprint.readthedocs.io/?badge=latest
 .. |source| image:: https://github.githubassets.com/favicons/favicon.png
    :target: https://github.com/pradyparanjpe/psprint.git
+
+.. |PyPi Version| image:: https://img.shields.io/pypi/v/psprint
+   :target: https://pypi.org/project/psprint/
+   :alt: PyPI - version
+
+.. |PyPi Format| image:: https://img.shields.io/pypi/format/psprint
+   :target: https://pypi.org/project/psprint/
+   :alt: PyPI - format
+
+.. |PyPi Pyversion| image:: https://img.shields.io/pypi/pyversions/psprint
+   :target: https://pypi.org/project/psprint/
+   :alt: PyPi - pyversion

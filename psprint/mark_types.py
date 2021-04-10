@@ -23,6 +23,7 @@ Information Marker
 
 import warnings
 import typing
+
 from .ansi import ANSI
 from .errors import ValueWarning
 from .text_types import PrintPref, AnsiEffect

@@ -10,6 +10,11 @@ Welcome to psprint's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   README
+   INSTALL
+   configure
+   usage
+   source-code-doc
 
 Indices and tables
 ==================
@@ -18,62 +23,3 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-
-------------------------------------------------------------------------------
-
-.. mdinclude:: ../README.md
-
-------------------------------------------------------------------------------
-
-Installation
-============
-
-.. mdinclude:: ../INSTALL.md
-
-
-------------------------------------------------------------------------------
-
-Usage
-=====
-
-.. include:: usage.rst
-
-------------------------------------------------------------------------------
-
-
-Configuration
-=============
-
-.. include:: configuration.rst
-
-------------------------------------------------------------------------------
-
-
-psprint
-=======
-
-.. automodule:: psprint
-   :members:
-
-PrintSpace
-==========
-.. autoclass:: psprint.printer.PrintSpace
-   :members:
-
-
-InfoMark
-========
-.. automodule:: psprint.mark_types
-   :members:
-
-
-TextTypes
-=========
-.. automodule:: psprint.text_types
-   :members:
-
-Error/Warnings
-==============
-
-.. automodule:: psprint.errors
-   :members:

@@ -14,9 +14,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../launcher_menus/'))
+sys.path.insert(0, os.path.abspath('..'))
 import sphinx_rtd_theme
-import m2r2
 
 
 # -- Project information -----------------------------------------------------
@@ -26,7 +25,7 @@ copyright = '2021, Pradyumna Paranjape'
 author = 'Pradyumna Paranjape'
 
 # The full version, including alpha/beta/rc tags
-release = '21.3.1'
+release = '1!1.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -37,7 +36,6 @@ release = '21.3.1'
 extensions = [
     'sphinx.ext.todo', 'sphinx.ext.autodoc', 'sphinx.ext.napoleon',
     'sphinx.ext.viewcode', 'sphinx_rtd_theme', "sphinx_autodoc_typehints",
-    'm2r2'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

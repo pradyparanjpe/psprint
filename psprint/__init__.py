@@ -22,8 +22,9 @@ Prompt String-like Print
 '''
 
 import os
+from pathlib import Path
 import sys
-import pathlib
+
 from .printer import PrintSpace
 
 
@@ -38,28 +39,23 @@ def init_print(custom: str = None) -> PrintSpace:
 
     '''
     # psprintrc file locations
-    user_home = pathlib.Path(os.environ["HOME"])
-    config = user_home.joinpath(".config")  # default
+    user_home = Path(os.environ["HOME"]).resolve()
+    config = os.environ.get("XDG_CONFIG_HOME", user_home.joinpath(".config"))
     rc_locations = {
-        'root': pathlib.Path("/etc/psprint/style.yml"),
-        'user': user_home.joinpath("." + "psprintrc"),  # bad habit
-        'config': pathlib.Path(
-            os.environ.get("XDG_CONFIG_HOME", str(config))
-        ).joinpath("psprint", "style.yml"),  # good habit
-        'local': pathlib.Path('.').resolve().joinpath("." + "psprintrc"),
-        'custom': None,
+        'root': Path("/etc/psprint/style.yml"),
+        'user': user_home.joinpath(".psprintrc"),  # bad
+        'config': Path(config).joinpath("psprint", "style.yml"),  # good
+        'local': Path(".psprintrc").resolve(),
+        'custom': Path(custom) if custom else None,
     }
 
-    if custom is not None:
-        rc_locations['custom'] = pathlib.Path(custom)
-
-    default_config = os.path.join(os.path.dirname(__file__), "style.yml")
+    default_config = Path(__file__).parent.joinpath("style.yml")
     default_print = PrintSpace(config=default_config)
 
     for loc in ('root', 'user', 'config', 'local', 'custom'):
         # DONT: loc from tuple, not keys(), deliberately to ascertain order
         if rc_locations[loc] is not None:
-            if rc_locations[loc].exists():  # type: ignore
+            if rc_locations[loc].is_file():  # type: ignore
                 default_print.set_opts(rc_locations[loc])
 
     if 'idlelib.run' in sys.modules or not sys.stdout.isatty():
@@ -86,4 +82,4 @@ psprint function for imports
 __all__ = ['DEFAULT_PRINT', 'print']
 
 
-__version__ = "21.3.1"
+__version__ = "1!1.0.0"

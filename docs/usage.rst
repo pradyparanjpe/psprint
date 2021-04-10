@@ -1,5 +1,9 @@
+#####
+USAGE
+#####
+
 Substitute python's print
--------------------------
+=========================
 
 Import in your script.
 
@@ -14,4 +18,16 @@ Supply value for ``mark`` kwarg or for any of the custom kwargs as described.
           print("", mark="info")
 
 
-Configure frequently used ``mark`` in a suitably `located <#location-of-configuration-files>`__ configuration file.
+.. note::
+
+    You may have to add exception to ``${XDG_CONFIG_HOME}/pylintrc`` if you use linter
+
+.. code:: ini
+
+    [VARIABLES]
+    redefining-builtins-modules=psprint
+
+
+Configure frequently used ``mark`` in a suitably `located <configure.html#location-of-configuration-files>`__ configuration file.
+
+
