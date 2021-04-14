@@ -145,3 +145,6 @@ pypi.sh
 
 # Original README.org -> pandoc -> README.md
 README.org
+
+# linters, etc
+code_aid.txt

@@ -22,11 +22,10 @@ Text Parts
 
 '''
 
-
 import typing
 
 from .ansi import ANSI
-from .errors import BadColor, BadGloss, BadBGCol, BadPrefix, BadShortPrefix
+from .errors import BadBGCol, BadColor, BadGloss, BadPrefix, BadShortPrefix
 
 
 class AnsiEffect():
@@ -50,22 +49,25 @@ class AnsiEffect():
         BadBGCol
 
     '''
-    def __init__(self, parent=None, color: str = None,
-                 gloss: str = None, bgcol: str = None) -> None:
+    def __init__(self,
+                 parent=None,
+                 color: str = None,
+                 gloss: str = None,
+                 bgcol: str = None) -> None:
         # inherit
         self.color, self.gloss, self.bgcol = self.inherit(parent)
 
         # modify
         try:
-            self.color = ANSI.FG_COLORS[color] if color else self.color
+            self.color: str = ANSI.FG_COLORS[color] if color else self.color
         except KeyError:
             raise BadColor(color) from None
         try:
-            self.gloss = ANSI.GLOSS[gloss] if gloss else self.gloss
+            self.gloss: str = ANSI.GLOSS[gloss] if gloss else self.gloss
         except KeyError:
             raise BadGloss(gloss) from None
         try:
-            self.bgcol = ANSI.BG_COLORS[bgcol] if bgcol else self.bgcol
+            self.bgcol: str = ANSI.BG_COLORS[bgcol] if bgcol else self.bgcol
         except KeyError:
             raise BadBGCol(bgcol) from None
 
@@ -86,19 +88,13 @@ class AnsiEffect():
         '''
         return self.color + self.bgcol + self.gloss
 
-    @style.deleter
-    def style(self):
-        self.color = ''
-        self.gloss = ''
-        self.bgcol = ''
-
     def __str__(self) -> str:
         '''
         Human readable form
         '''
         return self.style
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         '''
         repr(self)
         '''
@@ -137,8 +133,11 @@ class PrintPref():
         BadShortPrefix
 
     '''
-    def __init__(self, parent=None, pref: typing.List[str] = None,
-                 pref_max: int = 0, **kwargs) -> None:
+    def __init__(self,
+                 parent=None,
+                 pref: typing.List[str] = None,
+                 pref_max: int = 0,
+                 **kwargs) -> None:
         self.brackets = [1, 1]
         style, self.pref = self._inherit(parent=parent, pref=pref)
         self.style = AnsiEffect(parent=style, **kwargs)
@@ -153,24 +152,26 @@ class PrintPref():
                 self.brackets[idx] = 0
                 pad_len[idx] += 2  # corresponding to `[]`
             pad_len[idx] += max(pad_max[idx] - len(pref_type), 0)
-        self.pad = [' ' * (span+1) for span in pad_len]
+        self.pad = [' ' * (span + 1) for span in pad_len]
 
     @staticmethod
     def _inherit(
-            parent=None, pref: typing.List[str] = None
+        parent=None,
+        pref: typing.List[str] = None
     ) -> typing.Tuple[typing.Union[AnsiEffect, None], list]:
         '''
         inherit pref and style from parent if not supplied
         '''
         if parent is None:
             return None, pref or ['', '']
-        if pref is None:
+        if pref is None:  # pragma: no cover
+            # Logically never reached unless explicitly stated
             pref = [parent.pref[0], parent.pref[1]]
         pref[0] = pref[0] or parent.pref[0]
         pref[1] = pref[1] or parent.pref[1]
         return parent.style, pref
 
-    def __len__(self) -> int:
+    def __len__(self) -> int:  # pragma: no cover
         '''
         length of prefix
         '''

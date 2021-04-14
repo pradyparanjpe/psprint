@@ -21,15 +21,12 @@
 ANSI colors' and styles' definitions
 '''
 
-
-from pathlib import Path
 import types
+from pathlib import Path
 
 import yaml
 
-
-with open(Path(__file__).resolve().parent.joinpath("ansi.yml"),
-          "r") as stream:
+with open(Path(__file__).resolve().parent.joinpath("ansi.yml"), "r") as stream:
     ANSI = types.SimpleNamespace(**yaml.safe_load(stream))
     '''
     ANSI codes' namespace

@@ -28,8 +28,8 @@ import typing
 import yaml
 
 from .ansi import ANSI
-from .mark_types import InfoMark
 from .errors import BadMark
+from .mark_types import InfoMark
 
 
 class PrintSpace():
@@ -54,10 +54,18 @@ class PrintSpace():
     '''
     def __init__(self, config: os.PathLike) -> None:
         # Standard info styles
-        self.switches = {'pad': False, 'short': False,
-                         'bland': False, 'disabled': False}
-        self.print_kwargs = {'file': sys.stdout, 'sep': "\t",
-                             'end': "\n", 'flush': False}
+        self.switches = {
+            'pad': False,
+            'short': False,
+            'bland': False,
+            'disabled': False
+        }
+        self.print_kwargs = {
+            'file': sys.stdout,
+            'sep': "\t",
+            'end': "\n",
+            'flush': False
+        }
         self.pref_max = None
         self.info_style: typing.Dict[str, InfoMark] = {}
         self.info_index: typing.List[str] = []
@@ -89,7 +97,7 @@ class PrintSpace():
                 self.print_kwargs['end'] = settings.get("end", "\n")
                 self.print_kwargs['flush'] = settings.get("flush", False)
                 fname = settings.get("file", None)  # Discouraged
-                if fname is not None:
+                if fname is not None:  # pragma: no cover
                     self.print_kwargs['file'] = open(fname, "a")
             elif mark == 'order':
                 info_index = settings
@@ -97,22 +105,25 @@ class PrintSpace():
                 # Mark definition
                 try:
                     self.edit_style(mark=mark, **settings)
-                except ValueError:
+                except (ValueError, TypeError):
                     raise BadMark(str(mark), rcfile.name) from None
         if info_index is not None:
-            self.info_index = list(filter(lambda x: x in self.info_style,
-                                          info_index))
+            self.info_index = list(
+                filter(lambda x: x in self.info_style, info_index))
 
-    def edit_style(self, index_int: int = None,
-                   mark: str = None, **kwargs) -> str:
+    def edit_style(self,
+                   pref: str,
+                   index_int: int = None,
+                   mark: str = None,
+                   **kwargs) -> str:
         '''
         Edit loaded style
 
         Args:
+            pref: str: prefix string long [length < 10 characters]
             index_int: Index number that will call this InfoMark
             mark: Mark string that will call this ``InfoMark``
             **kwargs:
-                * pref: str: prefix string long [length < 10 characters]
                 * pref_s: str: prefix string short [1 character]
                 * code:
 
@@ -133,10 +144,8 @@ class PrintSpace():
 
         '''
         # correct pref
-        if kwargs.get('pref') is None:
-            raise ValueError(str)
         if mark is None:
-            mark = kwargs['pref'][:4]
+            mark = pref[:4]
         if index_int is None or \
            not 0 <= index_int <= len(self.info_index):
             self.info_index.append(mark)
@@ -161,12 +170,12 @@ class PrintSpace():
                     mark = self.info_index.pop(index_int)
         if mark is None:
             raise SyntaxError('''
-            At least one of mark and index_int should be provided
+            At least one of ``mark`` and ``index_int`` should be provided
             ''')
         del self.info_style[mark]
         return str(self)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         '''
         Returns:
             Formatted summary of info_style
@@ -175,7 +184,8 @@ class PrintSpace():
         outstr += "\n".join((f"{k}:{v}" for k, v in self.info_style.items()))
         return outstr
 
-    def _which_mark(self, mark: typing.Union[str, int, InfoMark] = None,
+    def _which_mark(self,
+                    mark: typing.Union[str, int, InfoMark] = None,
                     **kwargs) -> InfoMark:
         '''
         Define a mark based on arguments supplied
@@ -218,14 +228,21 @@ class PrintSpace():
             else:
                 raise BadMark(mark=str(mark), config="**kwargs")
         if any(arg in kwargs for arg in [
-                'pref', 'pref_s', 'pref_color',
-                'pref_gloss', 'pref_bgcol', 'text_color', 'text_gloss',
+                'pref',
+                'pref_s',
+                'pref_color',
+                'pref_gloss',
+                'pref_bgcol',
+                'text_color',
+                'text_gloss',
                 'text_bgcol',
         ]):
             return InfoMark(parent=base_mark, pref_max=self.pref_max, **kwargs)
         return base_mark
 
-    def psprint(self, *args, mark: typing.Union[str, int, InfoMark] = None,
+    def psprint(self,
+                *args,
+                mark: typing.Union[str, int, InfoMark] = None,
                 **kwargs) -> None:
         '''
         Prefix String PRINT
@@ -273,11 +290,21 @@ class PrintSpace():
             BadMark
         '''
         # Extract kwargs
-        print_kwargs = {key: {**self.print_kwargs, **kwargs}[key]
-                        for key in self.print_kwargs}
+        print_kwargs = {
+            key: {
+                **self.print_kwargs,
+                **kwargs
+            }[key]
+            for key in self.print_kwargs
+        }
 
-        switches = {key: {**self.switches, **kwargs}[key]
-                    for key in self.switches}
+        switches = {
+            key: {
+                **self.switches,
+                **kwargs
+            }[key]
+            for key in self.switches
+        }
         if switches['disabled'] or not args:
             print(*args, **print_kwargs)  # type: ignore
             return

@@ -21,13 +21,12 @@ Information Marker
 
 '''
 
-import warnings
 import typing
+import warnings
 
 from .ansi import ANSI
 from .errors import ValueWarning
-from .text_types import PrintPref, AnsiEffect
-
+from .text_types import AnsiEffect, PrintPref
 
 DEFAULT_STYLE: typing.Dict[str, int] = {'color': 16, 'gloss': 1, 'bgcol': 16}
 '''
@@ -48,6 +47,8 @@ class InfoMark():
         parent: Inherit information from-
         pref_max: pad prefix to reach length
         **kwargs:
+            * pref: prefix string
+            * pref_s: prefix short string
             * code:
 
                 * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
@@ -63,7 +64,8 @@ class InfoMark():
                 * text_bgcol: background color of text
 
     '''
-    def __init__(self, parent: 'InfoMark' = None,
+    def __init__(self,
+                 parent: 'InfoMark' = None,
                  pref_max: int = None,
                  **kwargs: typing.Union[str, str]) -> None:
         if pref_max is None:
@@ -83,38 +85,35 @@ class InfoMark():
         pref = [kwargs.get('pref', ''), kwargs.get('pref_s', '>')]
         if pref[0] is not None and len(pref[0]) > pref_max:
             trim = pref[0][:pref_max]
-            warnings.warn(
-                f"Prefix string '{pref[0]}'" +
-                f" is too long (length>{pref_max}) " +
-                f"trimming to {trim}",
-                category=ValueWarning
-            )
+            warnings.warn(f"Prefix string '{pref[0]}'" +
+                          f" is too long (length>{pref_max}) " +
+                          f"trimming to {trim}",
+                          category=ValueWarning)
             pref[0] = trim
         if pref[1] is not None and len(pref[1]) > 1:
             trim = pref[1][:1]
-            warnings.warn(
-                "Prefix string '{pref[1]}'" +
-                f" is too long (length>1) trimming to {trim}",
-                category=ValueWarning
-            )
+            warnings.warn("Prefix string '{pref[1]}'" +
+                          f" is too long (length>1) trimming to {trim}",
+                          category=ValueWarning)
             pref[1] = trim
         parent_pref = parent.pref if parent else None  # type: ignore
         parent_text = parent.text if parent else None  # type: ignore
 
-        self.pref = PrintPref(parent=parent_pref, pref=pref,
-                              pref_max=pref_max, **pref_args)
+        self.pref = PrintPref(parent=parent_pref,
+                              pref=pref,
+                              pref_max=pref_max,
+                              **pref_args)
         self.text = AnsiEffect(parent=parent_text, **text_args)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         '''
         String format of available information
         '''
         return "\t".join(
             (str(self.pref.style), self.pref.pref[0], self.pref.pref[1],
-             self.text.style + "<CUSTOM>" + ANSI.RESET_ALL)
-        )
+             self.text.style + "<CUSTOM>" + ANSI.RESET_ALL))
 
-    def get_info(self) -> str:
+    def get_info(self) -> str:  # pragma: no cover
         '''
         Print information about ``InfoMark``
 

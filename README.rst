@@ -15,7 +15,7 @@ Source Code Repository
 Badges
 ======
 
-|Documentation Status|  |PyPi Version|  |PyPi Format|  |PyPi Pyversion|
+|Documentation Status|  |Coverage|  |PyPi Version|  |PyPi Format|  |PyPi Pyversion|
 
 
 ************
@@ -73,3 +73,7 @@ Screenshot:
 .. |PyPi Pyversion| image:: https://img.shields.io/pypi/pyversions/psprint
    :target: https://pypi.org/project/psprint/
    :alt: PyPi - pyversion
+
+.. |Coverage| image:: docs/coverage.svg
+   :alt: tests coverage
+   :target: tests/htmlcov/index.html

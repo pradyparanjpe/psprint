@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8; mode:python -*-
 #
-# Copyright 2020 Pradyumna Paranjape
+# Copyright 2020, 2021 Pradyumna Paranjape
 # This file is part of psprint.
 #
 # psprint is free software: you can redistribute it and/or modify
