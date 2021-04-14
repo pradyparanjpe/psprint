@@ -135,7 +135,7 @@ class TestPrintSpace(unittest.TestCase):
 
     @staticmethod
     def test_precreated_inherit():
-        mark = InfoMark(parent=DEFAULT_PRINT.info_style['info'], pref=None)
+        mark = InfoMark(parent=DEFAULT_PRINT.info_style['info'])
         DEFAULT_PRINT.psprint("pass mark", mark=mark)
 
 
