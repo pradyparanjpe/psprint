@@ -316,5 +316,5 @@ class PrintSpace():
         if not switches.get('bland'):
             args_l[0] = str(mark.text) + str(args_l[0])
             args_l[-1] = str(args_l[-1]) + ANSI.RESET_ALL
-        args_l[0] = mark.pref.to_str(**switches) + args_l[0]
+        args_l[0] = mark.pref.to_str(**switches) + str(args_l[0]
         print(*args_l, **print_kwargs)  # type: ignore
