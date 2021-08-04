@@ -96,8 +96,8 @@ class InfoMark():
                           f" is too long (length>1) trimming to {trim}",
                           category=ValueWarning)
             pref[1] = trim
-        parent_pref = parent.pref if parent else None  # type: ignore
-        parent_text = parent.text if parent else None  # type: ignore
+        parent_pref = parent.pref if parent else None
+        parent_text = parent.text if parent else None
 
         self.pref = PrintPref(parent=parent_pref,
                               pref=pref,

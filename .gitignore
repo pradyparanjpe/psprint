@@ -140,11 +140,8 @@ cython_debug/
 # built documentation
 docs/_*
 
-# pypi pushed
-pypi.sh
+# vim linters, etc
+.vim/*
 
-# Original README.org -> pandoc -> README.md
-README.org
-
-# linters, etc
-code_aid.txt
+# coding aids
+/code-aid

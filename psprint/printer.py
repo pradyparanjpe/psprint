@@ -146,6 +146,7 @@ class PrintSpace():
         # correct pref
         if mark is None:
             mark = pref[:4]
+        kwargs['pref'] = pref
         if index_int is None or \
            not 0 <= index_int <= len(self.info_index):
             self.info_index.append(mark)
@@ -157,8 +158,8 @@ class PrintSpace():
     def remove_style(self, mark: str = None, index_int: int = None) -> str:
         '''
         Args:
-        mark: is popped out of defined styles
-        index_int: is used to locate index_str if it is not provided
+            mark: is popped out of defined styles
+            index_int: is used to locate index_str if it is not provided
 
         Returns
             Summary of new (updated) ``PrintSpace``
@@ -190,9 +191,8 @@ class PrintSpace():
         '''
         Define a mark based on arguments supplied
 
-        may be a pre-defined mark
-        OR
-        mark defined on the fly
+            * may be a pre-defined mark OR
+            * mark defined on the fly
 
         Args:
             mark: mark that identifies a defined prefix
@@ -216,14 +216,17 @@ class PrintSpace():
         '''
         base_mark: InfoMark = self.info_style['cont']
         if mark is not None:
-            # Defined mark
+            # mark was supplied
             if isinstance(mark, InfoMark):
+                # ready-made mark was served
                 base_mark = mark
             elif isinstance(mark, int):
+                # mark supplied as index int
                 if not 0 <= mark < len(self.info_index):
                     mark = 0
                 base_mark = self.info_style[self.info_index[mark]]
             elif isinstance(mark, str):
+                # mark named key supplied
                 base_mark = self.info_style.get(mark) or base_mark
             else:
                 raise BadMark(mark=str(mark), config="**kwargs")
@@ -249,7 +252,7 @@ class PrintSpace():
 
         Args:
             *args: passed to print_function for printing
-            mark: pre-declared InfoMark defaults:
+            mark: pre-declared `InfoMark` defaults:
 
                 * cont or 0 or anything else: nothing
                 * info or 1: [INFO]
@@ -306,7 +309,7 @@ class PrintSpace():
             for key in self.switches
         }
         if switches['disabled'] or not args:
-            print(*args, **print_kwargs)  # type: ignore
+            print(*args, **print_kwargs)
             return
 
         mark = self._which_mark(mark=mark, **kwargs)
@@ -317,4 +320,4 @@ class PrintSpace():
             args_l[0] = str(mark.text) + str(args_l[0])
             args_l[-1] = str(args_l[-1]) + ANSI.RESET_ALL
         args_l[0] = mark.pref.to_str(**switches) + str(args_l[0])
-        print(*args_l, **print_kwargs)  # type: ignore
+        print(*args_l, **print_kwargs)

@@ -22,8 +22,8 @@ Prompt String-like Print
 '''
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from .printer import PrintSpace
 
@@ -71,15 +71,12 @@ psprintrc and psprint/style.yml files
 
 '''
 
-
 print = DEFAULT_PRINT.psprint
 '''
 psprint function for imports
 
 '''
 
-
 __all__ = ['DEFAULT_PRINT', 'print']
 
-
-__version__ = "1!1.0.3"
+__version__ = "1!1.0.4"
