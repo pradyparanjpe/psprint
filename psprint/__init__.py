@@ -79,4 +79,4 @@ psprint function for imports
 
 __all__ = ['DEFAULT_PRINT', 'print']
 
-__version__ = "1!1.0.4"
+__version__ = "1!1.0.5"

@@ -191,13 +191,14 @@ class PrintPref():
             'ansi': '' if kwargs.get('bland') else str(self.style),
             'text': self.pref[pref_typ],
             'brackets': self.brackets[pref_typ],
-            'pref_pad': self.pad[pref_typ] if kwargs.get('pad') else ''
+            'pref_pad': self.pad[pref_typ] if kwargs.get('pad') else '',
+            'reset': '' if kwargs.get('bland') else ANSI.RESET_ALL,
         }
         return ''.join([
             parts['ansi'],
             '[' * parts['brackets'],
             parts['text'],
             ']' * parts['brackets'],
-            ANSI.RESET_ALL,
+            parts['reset'],
             parts['pref_pad'],
         ])
