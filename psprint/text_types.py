@@ -112,7 +112,7 @@ class PrintPref():
         **kwargs:
             * code:
 
-                * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                * color: {[0-15],[[l]krgybmcw],[[light] <color_name>]}
                 * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
 
             * for-

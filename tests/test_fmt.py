@@ -53,7 +53,7 @@ class MyFmtClass():
         self.attr = data
 
 
-class TestFmt(unittest.TestCase):
+class TestFmtStr(unittest.TestCase):
     def setUp(self):
         self.fmtobj = MyFmtClass()
 
@@ -70,3 +70,28 @@ class TestFmt(unittest.TestCase):
         expected_out_str = '[LIST]data: ' + '\n'.join(data)
         self.fmtobj.update('\n'.join(data))
         self.assertEqual(f'{self.fmtobj:list}', expected_out_str)
+
+
+class testFmt(unittest.TestCase):
+    def setUp(self):
+        self.data = ['The quick brown', 'Fox jumps over', 'The lazy dog']
+
+    def test_disabled(self):
+        fstr = psfmt(*self.data, disabled=True)
+        self.assertEqual(fstr, self.data)
+
+    def test_join(self):
+        fstr = psfmt(*self.data, disabled=True, sep='\t')
+        self.assertEqual(fstr, '\t'.join(self.data))
+
+    def test_w_sep(self):
+        fstr = psfmt(*self.data, sep='\n')
+        self.assertEqual(fstr, '\n'.join(self.data))
+
+    def test_wo_sep(self):
+        fstr = psfmt(*self.data)
+        self.assertEqual(fstr, self.data)
+
+    def test_empty_sep(self):
+        fstr = psfmt(*self.data, sep='')
+        self.assertEqual(fstr, ''.join(self.data))

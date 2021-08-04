@@ -127,7 +127,7 @@ class PrintSpace():
                 * pref_s: str: prefix string short [1 character]
                 * code:
 
-                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * color: {[0-15],[[l]krgybmcw],[[light] <color_name>]}
                     * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
 
                 * for-
@@ -201,7 +201,7 @@ class PrintSpace():
                 * pref_s: str: prefix string short [1 character]
                 * code:
 
-                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * color: {[0-15],[[l]krgybmcw],[[light] <color_name>]}
                     * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
 
                 * for-
@@ -264,15 +264,14 @@ class PrintSpace():
                 * bug:  or 6 [DEBUG]
                 * `Other marks defined in .psprintrc`
 
-            sep: return ``*args`` joined by separator.
-                If ``None``, return a ``list``
+            sep: If not ``None``, return `*args` joined by separator.
 
             **kwargs:
                 * pref: str: prefix string long [length < 10 characters]
                 * pref_s: str: prefix string short [1 character]
                 * code:
 
-                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * color: {[0-15],[[l]krgybmcw],[[light] <color_name>]}
                     * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
 
                 * for-
@@ -290,11 +289,13 @@ class PrintSpace():
                 * disabled: bool: behave like python default print_function
 
         Raises:
-            BadMark
+
+            BadMark: mark couldn't be interpreted
 
         Returns:
+
             * PSPRINT-like represented args. When `these` args is printed
-            using standard print, PSPRINT-like output appears.
+              using standard print, PSPRINT-like output appears.
             * If a sep is provided, it is used to join args and return a string
 
         """
@@ -348,7 +349,7 @@ class PrintSpace():
                 * pref_s: str: prefix string short [1 character]
                 * code:
 
-                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * color: {[0-15],[[l]krgybmcw],[[light] <color_name>]}
                     * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
 
                 * for-
@@ -370,7 +371,8 @@ class PrintSpace():
                 * flush: bool: passed to print function
 
         Raises:
-            BadMark
+            BadMark: mark couldn't be interpreted
+
         """
         # Extract print-kwargs
         print_kwargs = {
