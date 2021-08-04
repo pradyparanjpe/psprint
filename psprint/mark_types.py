@@ -21,14 +21,14 @@ Information Marker
 
 '''
 
-import typing
 import warnings
+from typing import Dict, Union
 
 from .ansi import ANSI
 from .errors import ValueWarning
 from .text_types import AnsiEffect, PrintPref
 
-DEFAULT_STYLE: typing.Dict[str, int] = {'color': 16, 'gloss': 1, 'bgcol': 16}
+DEFAULT_STYLE: Dict[str, int] = {'color': 16, 'gloss': 1, 'bgcol': 16}
 '''
 Terminal-determined color, black background, normal gloss
 
@@ -67,7 +67,7 @@ class InfoMark():
     def __init__(self,
                  parent: 'InfoMark' = None,
                  pref_max: int = None,
-                 **kwargs: typing.Union[str, str]) -> None:
+                 **kwargs: Union[str, str]) -> None:
         if pref_max is None:
             pref_max = 7  # default
 

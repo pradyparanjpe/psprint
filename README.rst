@@ -24,7 +24,7 @@ Description
 
 Prompt-String-like Print.
 
-[ INFO ]Print statements with a flexible descriptor prefix for better
+[ INFO ] Print statements with a flexible descriptor prefix for better
 readability.
 
 What does it do

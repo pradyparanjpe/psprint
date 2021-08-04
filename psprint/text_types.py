@@ -22,7 +22,7 @@ Text Parts
 
 '''
 
-import typing
+from typing import List, Tuple, Union
 
 from .ansi import ANSI
 from .errors import BadBGCol, BadColor, BadGloss, BadPrefix, BadShortPrefix
@@ -135,7 +135,7 @@ class PrintPref():
     '''
     def __init__(self,
                  parent=None,
-                 pref: typing.List[str] = None,
+                 pref: List[str] = None,
                  pref_max: int = 0,
                  **kwargs) -> None:
         self.brackets = [1, 1]
@@ -143,7 +143,7 @@ class PrintPref():
         self.style = AnsiEffect(parent=style, **kwargs)
         # 0: long, 1: short
         pad_max = (pref_max, 1)
-        pad_len: typing.List[int] = [0, 0]
+        pad_len: List[int] = [0, 0]
         for idx, pref_type in enumerate(self.pref):
             if not (isinstance(pref_type, str) or pref_type is None):
                 raise (BadPrefix, BadShortPrefix)[idx](pref_type) from None
@@ -156,9 +156,8 @@ class PrintPref():
 
     @staticmethod
     def _inherit(
-        parent=None,
-        pref: typing.List[str] = None
-    ) -> typing.Tuple[typing.Union[AnsiEffect, None], list]:
+            parent=None,
+            pref: List[str] = None) -> Tuple[Union[AnsiEffect, None], list]:
         '''
         inherit pref and style from parent if not supplied
         '''

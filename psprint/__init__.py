@@ -77,6 +77,12 @@ psprint function for imports
 
 '''
 
+psfmt = DEFAULT_PRINT.psfmt
+'''
+ps formatting function for imports
+
+'''
+
 __all__ = ['DEFAULT_PRINT', 'print']
 
-__version__ = "1!1.0.5"
+__version__ = '1!1.1.0'

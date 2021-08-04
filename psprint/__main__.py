@@ -21,19 +21,18 @@
 module init
 '''
 
-
 from . import print
-
 
 if __name__ in ("__main__", "psprint.__main__"):
     print()
     print("usage:", mark='err', pad=True, short=False)
     print("Use me as an imported module", mark='info', pad=True, short=False)
-    print("from psprint import PRINT as print",
-          mark='act', pad=True, short=False)
+    print("from psprint import print", mark='act', pad=True, short=False)
+    print("from psprint import psfmt", mark='act', pad=True, short=False)
     print("Styles may be edited by importing the PrintSpace class",
-          mark='list', pad=True, short=False)
-    print("Or by editing its DEFAULT_PRINT instance",
-          pad=True, short=False)
+          mark='list',
+          pad=True,
+          short=False)
+    print("Or by editing its DEFAULT_PRINT instance", pad=True, short=False)
     print("Bye", mark='bug', pad=True, short=False)
     print()

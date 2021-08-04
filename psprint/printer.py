@@ -23,7 +23,7 @@ Information- Prepended Print object
 
 import os
 import sys
-import typing
+from typing import Dict, List, Optional, Union
 
 import yaml
 
@@ -67,8 +67,8 @@ class PrintSpace():
             'flush': False
         }
         self.pref_max = None
-        self.info_style: typing.Dict[str, InfoMark] = {}
-        self.info_index: typing.List[str] = []
+        self.info_style: Dict[str, InfoMark] = {}
+        self.info_index: List[str] = []
         self.set_opts(config=config)
 
     def set_opts(self, config: os.PathLike = None) -> None:
@@ -84,9 +84,9 @@ class PrintSpace():
         '''
         if config is None:
             return
-        info_index: typing.Optional[typing.Dict[str, str]] = None
+        info_index: Optional[Dict[str, str]] = None
         with open(config, 'r') as rcfile:
-            conf: typing.Dict[str, dict] = yaml.safe_load(rcfile)
+            conf: Dict[str, dict] = yaml.safe_load(rcfile)
         for mark, settings in conf.items():
             if mark == "FLAGS":
                 # switches / flags
@@ -186,7 +186,7 @@ class PrintSpace():
         return outstr
 
     def _which_mark(self,
-                    mark: typing.Union[str, int, InfoMark] = None,
+                    mark: Union[str, int, InfoMark] = None,
                     **kwargs) -> InfoMark:
         '''
         Define a mark based on arguments supplied
@@ -243,11 +243,91 @@ class PrintSpace():
             return InfoMark(parent=base_mark, pref_max=self.pref_max, **kwargs)
         return base_mark
 
+    def psfmt(self,
+              *args,
+              mark: Union[str, int, InfoMark] = None,
+              sep: str = None,
+              **kwargs) -> Union[List[str], str]:
+        """
+        Prefix String represenattion.
+
+        Args:
+            *args: passed to print_function for printing
+            mark: pre-declared `InfoMark` defaults:
+
+                * cont or 0 or anything else: nothing
+                * info or 1: [INFO]
+                * act  or 2: [ACTION]
+                * list or 3: [LIST]
+                * warn or 4: [WARNING]
+                * error:or 5: [ERROR]
+                * bug:  or 6 [DEBUG]
+                * `Other marks defined in .psprintrc`
+
+            sep: return ``*args`` joined by separator.
+                If ``None``, return a ``list``
+
+            **kwargs:
+                * pref: str: prefix string long [length < 10 characters]
+                * pref_s: str: prefix string short [1 character]
+                * code:
+
+                    * color: {[0-15],[[l]krgybmcw],[[light] color_name]}
+                    * gloss: {[0-3],[rcdb],{reset,normal,dim,bright}}
+
+                * for-
+
+                    * pref_color: color of of prefix
+                    * pref_gloss: gloss of prefix
+                    * pref_bgcol: background color of prefix
+                    * text_color: color of of text
+                    * text_gloss: gloss of text
+                    * text_bgcol: background color of text
+
+                * pad: bool: prefix is padded to start text at the same level
+                * short: bool: display short, 1 character- prefix
+                * bland: bool: do not show ANSI color/styles for prefix/text
+                * disabled: bool: behave like python default print_function
+
+        Raises:
+            BadMark
+
+        Returns:
+            * PSPRINT-like represented args. When `these` args is printed
+            using standard print, PSPRINT-like output appears.
+            * If a sep is provided, it is used to join args and return a string
+
+        """
+        switches = {
+            key: {
+                **self.switches,
+                **kwargs
+            }[key]
+            for key in self.switches
+        }
+
+        args_l = list(args)  # typecast
+        if switches['disabled'] or not args:
+            if sep is not None:
+                return sep.join(args_l)
+            return args_l
+
+        mark = self._which_mark(mark=mark, **kwargs)
+
+        # add prefix to *args[0]
+        if not switches.get('bland'):
+            args_l[0] = str(mark.text) + str(args_l[0])
+            args_l[-1] = str(args_l[-1]) + ANSI.RESET_ALL
+        args_l[0] = mark.pref.to_str(**switches) + str(args_l[0])
+        if sep is not None:
+            return sep.join(args_l)
+        return args_l
+
     def psprint(self,
                 *args,
-                mark: typing.Union[str, int, InfoMark] = None,
+                mark: Union[str, int, InfoMark] = None,
                 **kwargs) -> None:
-        '''
+        """
         Prefix String PRINT
 
         Args:
@@ -284,15 +364,15 @@ class PrintSpace():
                 * short: bool: display short, 1 character- prefix
                 * bland: bool: do not show ANSI color/styles for prefix/text
                 * disabled: bool: behave like python default print_function
-                * file: typing.IO: passed to print function
+                * file: IO: passed to print function
                 * sep: str: passed to print function
                 * end: str: passed to print function
                 * flush: bool: passed to print function
 
         Raises:
             BadMark
-        '''
-        # Extract kwargs
+        """
+        # Extract print-kwargs
         print_kwargs = {
             key: {
                 **self.print_kwargs,
@@ -301,23 +381,4 @@ class PrintSpace():
             for key in self.print_kwargs
         }
 
-        switches = {
-            key: {
-                **self.switches,
-                **kwargs
-            }[key]
-            for key in self.switches
-        }
-        if switches['disabled'] or not args:
-            print(*args, **print_kwargs)
-            return
-
-        mark = self._which_mark(mark=mark, **kwargs)
-
-        # add prefix to *args[0]
-        args_l = list(args)  # typecast
-        if not switches.get('bland'):
-            args_l[0] = str(mark.text) + str(args_l[0])
-            args_l[-1] = str(args_l[-1]) + ANSI.RESET_ALL
-        args_l[0] = mark.pref.to_str(**switches) + str(args_l[0])
-        print(*args_l, **print_kwargs)
+        print(*self.psfmt(*args, mark=mark, **kwargs), **print_kwargs)
